@@ -25,8 +25,7 @@ public class DownloadService {
     private DriveAPIService service;
 
     public void downloadFile(DriveItem root, ConfigModel config) throws IOException {
-        // The destination directory will contain all the files - make a folder inside the destination directory
-        // To
+        // Create a dummy directory to ensure everything is organized
         File accDest = new File(config.getDestinationDirectory().toFile(), "DriveClonr");
         downloadFile(root, accDest, config);
     }
@@ -38,7 +37,7 @@ public class DownloadService {
         }
         // If this is a folder, create that folders directory and recurse on all the children
         if (d.isFolder()) {
-            File folder = new File(currPath, d.getName());
+            File folder = new File(currPath, FileUtils.sanitizeFilename((d.getName())));
             folder.mkdirs();
             for (DriveItem child : d.getChildren()) {
                 downloadFile(child, folder, config);
@@ -51,6 +50,13 @@ public class DownloadService {
             while (new File(currPath, newName).exists()) {
                 newName = FileUtils.sanitizeFilename(d.getName()) + "_" + i++;
             }
+
+            // add the necessary extension to the file
+            String extension = config.getExportFormat(d.getMimeType()).getExtension();
+            newName += extension;
+            // Note that if no extension is needed, the extension will be empty so this is safe
+
+
             // Write the file to the destination directory
             try (OutputStream out = new FileOutputStream(new File(currPath, newName))) {
                 stream.writeTo(out);

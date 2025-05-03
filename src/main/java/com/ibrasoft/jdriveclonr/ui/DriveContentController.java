@@ -134,21 +134,35 @@ public class DriveContentController implements Initializable {
     }
 
     /**
-     * Returns the root of the tree, with pruned branches only containing selected items.
-     * @param item
-     * @return
+     /**
+     * Returns a DriveItem tree containing only selected items with their hierarchy preserved.
+     * @param item The root checkbox tree item
+     * @return A new DriveItem tree with only selected nodes
      */
-    private List<DriveItem> collectSelected(CheckBoxTreeItem<DriveItem> item) {
-        List<DriveItem> out = new ArrayList<>();
-        if (item == null) return out;
+    private DriveItem collectSelected(CheckBoxTreeItem<DriveItem> item, boolean print) {
+        if (item == null || (!item.isSelected() && !item.isIndeterminate())) return null;
 
-        if (item.isSelected() && !item.getValue().getMimeType().startsWith("virtual/")) {
-            out.add(item.getValue());
-        }
+        DriveItem original = item.getValue();
+        DriveItem copy = new DriveItem(
+                original.getId(),
+                original.getName(),
+                original.getMimeType(),
+                original.getSize(),
+                original.getModifiedTime(),
+                original.isShared(),
+                new ArrayList<>()
+        );
+
         for (TreeItem<DriveItem> child : item.getChildren()) {
-            out.addAll(collectSelected((CheckBoxTreeItem<DriveItem>) child));
+            DriveItem selectedChild = collectSelected((CheckBoxTreeItem<DriveItem>) child, false);
+            if (selectedChild != null) {
+                copy.getChildren().add(selectedChild);
+            }
         }
-        return out;
+        if (print) {
+            System.out.print(copy);
+        }
+        return copy;
     }
 
     /* ----------  UI actions ---------- */
@@ -157,24 +171,17 @@ public class DriveContentController implements Initializable {
         App.navigateTo("auth.fxml");
     }
 
-    @FXML private void onStartCloneClicked() {
-        List<DriveItem> selected = collectSelected((CheckBoxTreeItem<DriveItem>) driveTreeView.getRoot());
-        if (selected.isEmpty()) {
+    @FXML
+    private void onStartCloneClicked() {
+        DriveItem selected = collectSelected((CheckBoxTreeItem<DriveItem>) driveTreeView.getRoot(), true);
+        if (selected == null) {
             showAlert("No items selected", "Please select items to clone before starting.");
             return;
         }
 
-        selectedItems = selected; // Store the selected items
+        selectedItems = Collections.singletonList(selected); // Store the selected items
 
         try {
-//            FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/config.fxml"));
-//            Scene scene = new Scene(loader.load());
-//            scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
-//
-//            DownloadController controller = loader.getController();
-//            controller.startDownloads(selected, 4); // Use 4 threads for downloading
-//
-//            App.setScene(scene);
             App.navigateTo("config.fxml");
         } catch (Exception e) {
             showError("Could not load download view: " + e.getMessage());

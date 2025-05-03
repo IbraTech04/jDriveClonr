@@ -1,7 +1,6 @@
 package com.ibrasoft.jdriveclonr.model;
 
 import lombok.Data;
-
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;

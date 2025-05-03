@@ -1,16 +1,11 @@
 package com.ibrasoft.jdriveclonr.ui;
 
-import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.service.DownloadService;
-import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
 
 public class DownloadController implements javafx.fxml.Initializable {

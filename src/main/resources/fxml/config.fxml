@@ -44,6 +44,7 @@
 
         <!-- Bottom Buttons -->
         <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="Back" onAction="#onBackClicked"/>
             <Button fx:id="helpButton" text="Learn what we can clone"/>
             <Button text="Start Clone!" onAction="#onStartClicked" defaultButton="true" styleClass="primary-button"/>
         </HBox>
