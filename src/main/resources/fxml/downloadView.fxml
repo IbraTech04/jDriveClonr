@@ -1,24 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<BorderPane fx:controller="com.ibrasoft.jdriveclonr.ui.DownloadController"
-            xmlns:fx="http://javafx.com/fxml" prefWidth="640" prefHeight="420">
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ibrasoft.jdriveclonr.ui.DownloadController"
+            prefWidth="640" prefHeight="420">
+
+    <!-- ─────────── TOP (overall progress) ─────────── -->
     <top>
-        <VBox spacing="6" BorderPane.alignment="CENTER">
+        <VBox spacing="6.0" BorderPane.alignment="CENTER">
+            <padding>
+                <!-- Insets(top, right, bottom, left) -->
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
             <Label fx:id="overallLabel" text="Preparing downloads…"/>
             <ProgressBar fx:id="overallBar" prefWidth="620"/>
         </VBox>
     </top>
 
+    <!-- ─────────── CENTRE (per‑thread progress) ─────────── -->
     <center>
         <ListView fx:id="threadList" BorderPane.alignment="CENTER"/>
     </center>
 
+    <!-- ─────────── BOTTOM (buttons) ─────────── -->
     <bottom>
-        <HBox spacing="10" alignment="CENTER_RIGHT" padding="6">
-            <Button fx:id="cancelBtn"   text="Cancel"/>
-            <Button fx:id="closeBtn"    text="Close" disable="true"/>
+        <HBox spacing="10.0" alignment="CENTER_RIGHT">
+            <padding>
+                <Insets top="6" right="6" bottom="6" left="6"/>
+            </padding>
+
+            <Button fx:id="cancelBtn" text="Cancel"/>
+            <Button fx:id="closeBtn" text="Close" disable="true"/>
         </HBox>
     </bottom>
+
 </BorderPane>

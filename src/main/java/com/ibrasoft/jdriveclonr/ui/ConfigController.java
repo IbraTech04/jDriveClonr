@@ -148,33 +148,11 @@ public class ConfigController implements Initializable {
 
         updateConfigModel();
 
-        List<DriveItem> selectedItems = DriveContentController.getSelectedItems();
-        if (selectedItems == null || selectedItems.isEmpty()) {
-            // No items selected yet, navigate to drive content view to select files
-            try {
-                FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/drive-content.fxml"));
-                Scene scene = new Scene(loader.load());
-                scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
-
-                DriveContentController controller = loader.getController();
-                controller.setDriveService(App.getDriveService());
-
-                App.setScene(scene);
-            } catch (Exception e) {
-                showAlert("Error", "Could not load drive content view: " + e.getMessage());
-            }
-            return;
-        }
-
-        // Items already selected, proceed to download
+        // Items already selected, proceed to download view
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/downloadView.fxml"));
             Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
-
-            DownloadController controller = loader.getController();
-            controller.startDownloads(selectedItems, 4); // Use 4 threads for downloading
-
             App.setScene(scene);
         } catch (Exception e) {
             showAlert("Error", "Could not load download view: " + e.getMessage());
