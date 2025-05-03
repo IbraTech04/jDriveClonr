@@ -5,7 +5,7 @@
 <?import javafx.geometry.Insets?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.ibrasoft.jdriveclonr.ui.ConfigScreen">
+            fx:controller="com.ibrasoft.jdriveclonr.ui.ConfigController">
     <VBox spacing="15" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20"
           style="-fx-padding: 20;">
         <Label text="DriveClonr Configuration" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>

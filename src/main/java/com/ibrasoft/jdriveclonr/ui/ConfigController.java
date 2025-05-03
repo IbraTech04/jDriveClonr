@@ -20,7 +20,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class ConfigScreen implements Initializable {
+public class ConfigController implements Initializable {
     @FXML private TextField destinationField;
     @FXML private ComboBox<ExportFormat> docsFormatBox;
     @FXML private ComboBox<ExportFormat> sheetsFormatBox;
