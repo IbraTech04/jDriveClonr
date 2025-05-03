@@ -9,7 +9,6 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -17,6 +16,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.*;
 
 public class DriveContentController implements Initializable {
@@ -141,7 +141,9 @@ public class DriveContentController implements Initializable {
 
     /* ----------  UI actions ---------- */
 
-    @FXML private void onBackClicked() { App.navigateTo("auth.fxml"); }
+    @FXML private void onBackClicked() { 
+        App.navigateTo("config.fxml"); 
+    }
 
     @FXML private void onStartCloneClicked() {
         List<DriveItem> selected = collectSelected((CheckBoxTreeItem<DriveItem>) driveTreeView.getRoot());
@@ -150,14 +152,24 @@ public class DriveContentController implements Initializable {
             return;
         }
 
+        Path destinationDir = App.getConfig().getDestinationDirectory();
+        if (destinationDir == null) {
+            showAlert("Configuration Error", "Destination directory not set. Please go back to configuration.");
+            return;
+        }
+
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/downloadView.fxml"));
             Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
+            
+            DownloadController controller = loader.getController();
+            controller.startDownloads(selected, Runtime.getRuntime().availableProcessors());
+            
+            App.setScene(scene);
         } catch (IOException ex) {
             showError("Cannot open downloader: " + ex.getMessage());
         }
-
     }
 
     /* ----------  Dialog helpers ---------- */

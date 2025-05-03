@@ -18,20 +18,13 @@ public class AuthController {
             // Get credentials
             Credential credential = GoogleOAuthService.authorize();
 
-            // Create drive service
+            // Create drive service and store it in App
             DriveAPIService driveService = new DriveAPIService(credential);
+            App.setDriveService(driveService);
 
-            // Load FXML and inject service
-            FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/drive-content.fxml"));
-            Scene scene = new Scene(loader.load());
-            scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
-
-            // Get controller and set service
-            DriveContentController controller = loader.getController();
-            controller.setDriveService(driveService);
-
-            // Set the scene
-            App.setScene(scene);
+            // Navigate to config screen
+            App.navigateTo("config.fxml");
+            
         } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Authentication Error");

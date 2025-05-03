@@ -2,16 +2,50 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.ibrasoft.jdriveclonr.ui.ConfigScreen">
-    <VBox spacing="12" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
-        <Label text="DriveClonr Configuration" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+    <VBox spacing="15" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20"
+          style="-fx-padding: 20;">
+        <Label text="DriveClonr Configuration" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
-        <TextField fx:id="destinationField" promptText="Destination Folder (e.g. C:/Downloads/ClonedDrive)" />
-        <ComboBox fx:id="exportFormatBox" promptText="Export Format"/>
-        <CheckBox fx:id="longPathFixBox" text="Enable Long Path Fix" />
+        <!-- Destination Directory -->
+        <VBox spacing="5">
+            <Label text="Destination Directory" style="-fx-font-weight: bold;"/>
+            <HBox spacing="10">
+                <TextField fx:id="destinationField" HBox.hgrow="ALWAYS"
+                          promptText="Select destination folder for cloned files"/>
+                <Button fx:id="browseButton" text="Browse"/>
+            </HBox>
+        </VBox>
 
-        <Button text="Start Scan" onAction="#onStartClicked" />
+        <!-- Export Format Settings -->
+        <Label text="Export Format Settings" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+        <GridPane vgap="10" hgap="10">
+            <Label text="Google Docs:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="docsFormatBox" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="Infinity" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="Google Sheets:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="sheetsFormatBox" GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="Infinity" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="Google Slides:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="slidesFormatBox" GridPane.rowIndex="2" GridPane.columnIndex="1" maxWidth="Infinity" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="Google Drawings:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="drawingsFormatBox" GridPane.rowIndex="3" GridPane.columnIndex="1" maxWidth="Infinity" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="Jamboard:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="jamboardFormatBox" GridPane.rowIndex="4" GridPane.columnIndex="1" maxWidth="Infinity" GridPane.hgrow="ALWAYS"/>
+        </GridPane>
+
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <!-- Bottom Buttons -->
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button fx:id="helpButton" text="Learn what we can clone"/>
+            <Button text="Start Scan" onAction="#onStartClicked" defaultButton="true" styleClass="primary-button"/>
+        </HBox>
     </VBox>
 </AnchorPane>

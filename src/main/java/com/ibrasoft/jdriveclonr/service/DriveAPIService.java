@@ -6,8 +6,12 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
@@ -33,6 +37,25 @@ public class DriveAPIService {
 
     public DriveItem fetchTrashedFiles() throws IOException {
         return convertFilesToDriveItemTree(fetchFiles("trashed = true"), "Trash and mimeType != 'application/vnd.google-apps.form'");
+    }
+
+    public void downloadFile(DriveItem item, Path destination) throws IOException {
+        String mimeType = item.getMimeType();
+        String exportMimeType = App.getConfig().getExportFormat(mimeType);
+        
+        if (exportMimeType != null) {
+            // This is a Google Workspace file that needs to be exported
+            try (OutputStream out = Files.newOutputStream(destination)) {
+                driveService.files().export(item.getId(), exportMimeType)
+                    .executeMediaAndDownloadTo(out);
+            }
+        } else {
+            // This is a regular file, download as-is
+            try (OutputStream out = Files.newOutputStream(destination)) {
+                driveService.files().get(item.getId())
+                    .executeMediaAndDownloadTo(out);
+            }
+        }
     }
 
     private List<File> fetchFiles(String query) throws IOException {

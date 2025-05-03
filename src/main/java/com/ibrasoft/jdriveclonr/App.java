@@ -1,5 +1,7 @@
 package com.ibrasoft.jdriveclonr;
 
+import com.ibrasoft.jdriveclonr.model.ConfigModel;
+import com.ibrasoft.jdriveclonr.service.DriveAPIService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -8,10 +10,13 @@ import javafx.stage.Stage;
 
 public class App extends Application {
     private static Stage primaryStage;
+    private static ConfigModel configModel;
+    private static DriveAPIService driveService;
 
     @Override
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
+        configModel = new ConfigModel();
         navigateTo("welcome.fxml");
         primaryStage.setTitle("DriveClonr");
         
@@ -35,6 +40,18 @@ public class App extends Application {
 
     public static void setScene(Scene scene) {
         primaryStage.setScene(scene);
+    }
+
+    public static ConfigModel getConfig() {
+        return configModel;
+    }
+
+    public static void setDriveService(DriveAPIService service) {
+        driveService = service;
+    }
+
+    public static DriveAPIService getDriveService() {
+        return driveService;
     }
 
     public static void main(String[] args) {
