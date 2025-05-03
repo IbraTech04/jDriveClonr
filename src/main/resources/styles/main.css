@@ -1,0 +1,37 @@
+.root {
+    -fx-background-color: white;
+}
+
+.button {
+    -fx-padding: 8 16;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+
+.primary-button {
+    -fx-background-color: #4285f4;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.primary-button:hover {
+    -fx-background-color: #3367d6;
+}
+
+.google-button {
+    -fx-background-color: white;
+    -fx-border-color: #dadce0;
+    -fx-border-radius: 4;
+    -fx-font-weight: bold;
+    -fx-graphic-text-gap: 8;
+}
+
+.google-button:hover {
+    -fx-background-color: #f8f9fa;
+}
+
+.tree-view {
+    -fx-background-color: white;
+    -fx-border-color: #dadce0;
+    -fx-border-radius: 4;
+}

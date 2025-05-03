@@ -1,0 +1,43 @@
+package com.ibrasoft.jdriveclonr;
+
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
+
+public class App extends Application {
+    private static Stage primaryStage;
+
+    @Override
+    public void start(Stage stage) throws Exception {
+        primaryStage = stage;
+        navigateTo("welcome.fxml");
+        primaryStage.setTitle("DriveClonr");
+        
+        // Set application icon
+        Image icon = new Image(getClass().getResourceAsStream("/DriveClonrLogo.ico"));
+        primaryStage.getIcons().add(icon);
+        
+        primaryStage.show();
+    }
+
+    public static void navigateTo(String fxml) {
+        try {
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/" + fxml));
+            Scene scene = new Scene(loader.load());
+            scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
+            primaryStage.setScene(scene);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void setScene(Scene scene) {
+        primaryStage.setScene(scene);
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

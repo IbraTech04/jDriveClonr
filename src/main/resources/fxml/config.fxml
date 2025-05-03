@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ibrasoft.jdriveclonr.ui.ConfigScreen">
+    <VBox spacing="12" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+        <Label text="DriveClonr Configuration" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+
+        <TextField fx:id="destinationField" promptText="Destination Folder (e.g. C:/Downloads/ClonedDrive)" />
+        <ComboBox fx:id="exportFormatBox" promptText="Export Format"/>
+        <CheckBox fx:id="longPathFixBox" text="Enable Long Path Fix" />
+
+        <Button text="Start Scan" onAction="#onStartClicked" />
+    </VBox>
+</AnchorPane>
