@@ -59,7 +59,9 @@ public class DriveAPIService {
         String pageToken = null;
         do {
             FileList result = driveService.files().list()
-                    .setQ(query)
+                    .setQ(query + " and mimeType != 'application/vnd.google-apps.form'" +
+                            "and mimeType != 'application/vnd.google-apps.shortcut'" + // Not a shortcut
+                            "")
                     .setFields("nextPageToken, files(id, name, mimeType, parents, modifiedTime, size, shared)")
                     .setPageToken(pageToken)
                     .setPageSize(1000)

@@ -13,6 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.net.URL;
@@ -21,17 +22,11 @@ import java.util.*;
 
 public class DriveContentController implements Initializable {
 
-    /* ----------  Static state  ---------- */
-    private static List<DriveItem> selectedItems = new ArrayList<>();
-    
-    public static List<DriveItem> getSelectedItems() {
-        return selectedItems;
-    }
-
     /* ----------  FXML  ---------- */
     @FXML private TreeView<DriveItem> driveTreeView;
     @FXML private Button           startCloneButton;
     @FXML private VBox             loadingOverlay;
+    @Getter private static DriveItem selectedRoot;
 
     /* ----------  DI / services  ---------- */
     private DriveAPIService driveService;
@@ -139,7 +134,7 @@ public class DriveContentController implements Initializable {
      * @param item The root checkbox tree item
      * @return A new DriveItem tree with only selected nodes
      */
-    private DriveItem collectSelected(CheckBoxTreeItem<DriveItem> item, boolean print) {
+    public static DriveItem collectSelected(CheckBoxTreeItem<DriveItem> item, boolean print) {
         if (item == null || (!item.isSelected() && !item.isIndeterminate())) return null;
 
         DriveItem original = item.getValue();
@@ -178,8 +173,7 @@ public class DriveContentController implements Initializable {
             showAlert("No items selected", "Please select items to clone before starting.");
             return;
         }
-
-        selectedItems = Collections.singletonList(selected); // Store the selected items
+        selectedRoot = selected;
 
         try {
             App.navigateTo("config.fxml");

@@ -27,7 +27,8 @@ public class DriveItem {
     }
 
     public boolean isFolder() {
-        return "application/vnd.google-apps.folder".equalsIgnoreCase(mimeType);
+//        return "application/vnd.google-apps.folder".equalsIgnoreCase(mimeType);
+        return !this.children.isEmpty();
     }
 
     public String toString() {
