@@ -6,7 +6,7 @@
 
     <groupId>com.ibrasoft</groupId>
     <artifactId>jDriveClonr</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0-alpha</version>
     <name>jDriveClonr</name>
 
     <properties>
@@ -68,7 +68,6 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-        <!-- Lombok - compile-time annotations -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

@@ -21,6 +21,13 @@ import java.util.*;
 
 public class DriveContentController implements Initializable {
 
+    /* ----------  Static state  ---------- */
+    private static List<DriveItem> selectedItems = new ArrayList<>();
+    
+    public static List<DriveItem> getSelectedItems() {
+        return selectedItems;
+    }
+
     /* ----------  FXML  ---------- */
     @FXML private TreeView<DriveItem> driveTreeView;
     @FXML private Button           startCloneButton;
@@ -34,7 +41,7 @@ public class DriveContentController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // Basic TreeView configuration (cells, hide root)
         driveTreeView.setCellFactory(tv -> new DriveItemCell());
-        driveTreeView.setShowRoot(false);
+        driveTreeView.setShowRoot(true);
 
         if (loadingOverlay != null) loadingOverlay.setVisible(false);
         if (startCloneButton != null) startCloneButton.setDisable(true);
@@ -65,10 +72,10 @@ public class DriveContentController implements Initializable {
 
                 // Synthetic invisible root that holds both branches
                 DriveItem virtualRootValue = new DriveItem(
-                        "virtual-root", "Root", "virtual/root", 0, null, false, new ArrayList<>());
+                        "virtual-root", "Google Drive", "virtual/root", ownedRoot.getSize() + sharedRoot.getSize(), null, false, new ArrayList<>());
                 CheckBoxTreeItem<DriveItem> virtualRoot = new CheckBoxTreeItem<>(virtualRootValue);
                 virtualRoot.getChildren().addAll(ownedNode, sharedNode);
-
+                virtualRoot.setSelected(true);
                 return virtualRoot;
             }
         };
@@ -126,6 +133,11 @@ public class DriveContentController implements Initializable {
         return false;
     }
 
+    /**
+     * Returns the root of the tree, with pruned branches only containing selected items.
+     * @param item
+     * @return
+     */
     private List<DriveItem> collectSelected(CheckBoxTreeItem<DriveItem> item) {
         List<DriveItem> out = new ArrayList<>();
         if (item == null) return out;
@@ -142,7 +154,7 @@ public class DriveContentController implements Initializable {
     /* ----------  UI actions ---------- */
 
     @FXML private void onBackClicked() { 
-        App.navigateTo("config.fxml"); 
+        App.navigateTo("auth.fxml");
     }
 
     @FXML private void onStartCloneClicked() {
@@ -152,23 +164,20 @@ public class DriveContentController implements Initializable {
             return;
         }
 
-        Path destinationDir = App.getConfig().getDestinationDirectory();
-        if (destinationDir == null) {
-            showAlert("Configuration Error", "Destination directory not set. Please go back to configuration.");
-            return;
-        }
+        selectedItems = selected; // Store the selected items
 
         try {
-            FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/downloadView.fxml"));
-            Scene scene = new Scene(loader.load());
-            scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
-            
-            DownloadController controller = loader.getController();
-            controller.startDownloads(selected, Runtime.getRuntime().availableProcessors());
-            
-            App.setScene(scene);
-        } catch (IOException ex) {
-            showError("Cannot open downloader: " + ex.getMessage());
+//            FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/config.fxml"));
+//            Scene scene = new Scene(loader.load());
+//            scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
+//
+//            DownloadController controller = loader.getController();
+//            controller.startDownloads(selected, 4); // Use 4 threads for downloading
+//
+//            App.setScene(scene);
+            App.navigateTo("config.fxml");
+        } catch (Exception e) {
+            showError("Could not load download view: " + e.getMessage());
         }
     }
 

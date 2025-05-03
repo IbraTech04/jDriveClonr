@@ -39,25 +39,6 @@ public class DriveAPIService {
         return convertFilesToDriveItemTree(fetchFiles("trashed = true"), "Trash and mimeType != 'application/vnd.google-apps.form'");
     }
 
-    public void downloadFile(DriveItem item, Path destination) throws IOException {
-        String mimeType = item.getMimeType();
-        String exportMimeType = App.getConfig().getExportFormat(mimeType);
-        
-        if (exportMimeType != null) {
-            // This is a Google Workspace file that needs to be exported
-            try (OutputStream out = Files.newOutputStream(destination)) {
-                driveService.files().export(item.getId(), exportMimeType)
-                    .executeMediaAndDownloadTo(out);
-            }
-        } else {
-            // This is a regular file, download as-is
-            try (OutputStream out = Files.newOutputStream(destination)) {
-                driveService.files().get(item.getId())
-                    .executeMediaAndDownloadTo(out);
-            }
-        }
-    }
-
     private List<File> fetchFiles(String query) throws IOException {
         List<File> files = new ArrayList<>();
         String pageToken = null;

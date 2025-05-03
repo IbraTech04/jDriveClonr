@@ -26,6 +26,6 @@
     
     <HBox spacing="10.0" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
         <Button text="Back" onAction="#onBackClicked"/>
-        <Button text="Start Clone" onAction="#onStartCloneClicked" styleClass="primary-button" fx:id="startCloneButton"/>
+        <Button text="Next" onAction="#onStartCloneClicked" styleClass="primary-button" fx:id="startCloneButton"/>
     </HBox>
 </VBox>

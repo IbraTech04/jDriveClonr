@@ -2,7 +2,9 @@ package com.ibrasoft.jdriveclonr.ui;
 
 import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.model.ConfigModel;
-import com.ibrasoft.jdriveclonr.model.MimeTypeMapping;
+import com.ibrasoft.jdriveclonr.model.DriveItem;
+import com.ibrasoft.jdriveclonr.model.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.GoogleMime;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,57 +17,83 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class ConfigScreen implements Initializable {
     @FXML private TextField destinationField;
-    @FXML private ComboBox<String> docsFormatBox;
-    @FXML private ComboBox<String> sheetsFormatBox;
-    @FXML private ComboBox<String> slidesFormatBox;
-    @FXML private ComboBox<String> drawingsFormatBox;
-    @FXML private ComboBox<String> jamboardFormatBox;
+    @FXML private ComboBox<ExportFormat> docsFormatBox;
+    @FXML private ComboBox<ExportFormat> sheetsFormatBox;
+    @FXML private ComboBox<ExportFormat> slidesFormatBox;
+    @FXML private ComboBox<ExportFormat> drawingsFormatBox;
+    @FXML private ComboBox<ExportFormat> jamboardFormatBox;
     @FXML private Button browseButton;
     @FXML private Button helpButton;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Initialize format boxes with available options for each type
-        docsFormatBox.getItems().addAll(MimeTypeMapping.getUiValuesForType(MimeTypeMapping.DOCS_MIME_TYPE));
-        sheetsFormatBox.getItems().addAll(MimeTypeMapping.getUiValuesForType(MimeTypeMapping.SHEETS_MIME_TYPE));
-        slidesFormatBox.getItems().addAll(MimeTypeMapping.getUiValuesForType(MimeTypeMapping.SLIDES_MIME_TYPE));
-        drawingsFormatBox.getItems().addAll(MimeTypeMapping.getUiValuesForType(MimeTypeMapping.DRAWING_MIME_TYPE));
-        jamboardFormatBox.getItems().addAll(MimeTypeMapping.getUiValuesForType(MimeTypeMapping.JAMBOARD_MIME_TYPE));
-        
-        // Set default values
         ConfigModel config = App.getConfig();
-        docsFormatBox.setValue(config.getUiValueForType(MimeTypeMapping.DOCS_MIME_TYPE));
-        sheetsFormatBox.setValue(config.getUiValueForType(MimeTypeMapping.SHEETS_MIME_TYPE));
-        slidesFormatBox.setValue(config.getUiValueForType(MimeTypeMapping.SLIDES_MIME_TYPE));
-        drawingsFormatBox.setValue(config.getUiValueForType(MimeTypeMapping.DRAWING_MIME_TYPE));
-        jamboardFormatBox.setValue(config.getUiValueForType(MimeTypeMapping.JAMBOARD_MIME_TYPE));
-        
-        // Initialize buttons
+
+        // Populate format boxes
+        docsFormatBox.getItems().addAll(ExportFormat.getFormatsForGoogleMime(GoogleMime.DOCS));
+        sheetsFormatBox.getItems().addAll(ExportFormat.getFormatsForGoogleMime(GoogleMime.SHEETS));
+        slidesFormatBox.getItems().addAll(ExportFormat.getFormatsForGoogleMime(GoogleMime.SLIDES));
+        drawingsFormatBox.getItems().addAll(ExportFormat.getFormatsForGoogleMime(GoogleMime.DRAWINGS));
+        jamboardFormatBox.getItems().addAll(ExportFormat.getFormatsForGoogleMime(GoogleMime.JAMBOARD));
+
+        // Set default values from config
+        docsFormatBox.setValue(config.getExportFormat(GoogleMime.DOCS));
+        sheetsFormatBox.setValue(config.getExportFormat(GoogleMime.SHEETS));
+        slidesFormatBox.setValue(config.getExportFormat(GoogleMime.SLIDES));
+        drawingsFormatBox.setValue(config.getExportFormat(GoogleMime.DRAWINGS));
+        jamboardFormatBox.setValue(config.getExportFormat(GoogleMime.JAMBOARD));
+
+        // Button bindings
         browseButton.setOnAction(e -> handleBrowseButton());
         helpButton.setOnAction(e -> showHelpWindow());
 
-        // Load any existing destination directory
+        // Destination path load
         if (config.getDestinationDirectory() != null) {
             destinationField.setText(config.getDestinationDirectory().toString());
         }
+
+        // Optional: customize combo cell display
+        setupComboDisplay(docsFormatBox);
+        setupComboDisplay(sheetsFormatBox);
+        setupComboDisplay(slidesFormatBox);
+        setupComboDisplay(drawingsFormatBox);
+        setupComboDisplay(jamboardFormatBox);
     }
-    
+
+    private void setupComboDisplay(ComboBox<ExportFormat> comboBox) {
+        comboBox.setCellFactory(cb -> new ListCell<>() {
+            @Override
+            protected void updateItem(ExportFormat item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getUiLabel());
+            }
+        });
+        comboBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(ExportFormat item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getUiLabel());
+            }
+        });
+    }
+
     @FXML
     private void handleBrowseButton() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select Destination Folder");
         File selectedDirectory = directoryChooser.showDialog(destinationField.getScene().getWindow());
-        
+
         if (selectedDirectory != null) {
             destinationField.setText(selectedDirectory.getAbsolutePath());
             App.getConfig().setDestinationDirectory(selectedDirectory.toPath());
         }
     }
-    
+
     @FXML
     private void showHelpWindow() {
         try {
@@ -73,27 +101,36 @@ public class ConfigScreen implements Initializable {
             VBox content = new VBox(10);
             content.getStyleClass().add("help-content");
             content.setStyle("-fx-padding: 20;");
-            
+
             Label title = new Label("What We Can Clone");
             title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-            
+
             TextArea helpText = new TextArea();
             helpText.setWrapText(true);
-            helpText.setEditable(true);
+            helpText.setEditable(false);
             helpText.setPrefRowCount(10);
-            helpText.setText("DriveClonr can clone the following types of files:\n\n" +
-                           "- Google Docs → Microsoft Word, PDF, Plain Text, or HTML\n" +
-                           "- Google Sheets → Microsoft Excel, PDF, CSV, or HTML\n" +
-                           "- Google Slides → Microsoft PowerPoint, PDF, Plain Text, or HTML\n" +
-                           "- Google Drawings → PNG, JPEG, SVG, or PDF\n" +
-                           "- Google Jamboard → PDF or PNG\n\n" +
-                           "Edit this text to provide more details about cloning capabilities.");
-            
+            helpText.setText("""
+                    DriveClonr can clone the following types of files:
+                    
+                     - Google Docs → Microsoft Word, PDF, Plain Text, or HTML
+                     - Google Sheets → Microsoft Excel, PDF, CSV, or HTML
+                     - Google Slides → Microsoft PowerPoint, PDF, Plain Text, or HTML
+                     - Google Drawings → PNG, JPEG, SVG, or PDF
+                     - Google Jamboard → PDF or PNG
+
+                    We cannot clone:
+                     - Google Forms
+                     - Google Sites
+                     - Google Maps
+                     - Google My Maps
+                     - Google Keep
+                    """);
+
             content.getChildren().addAll(title, helpText);
-            
+
             Scene scene = new Scene(content, 500, 400);
             scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
-            
+
             helpStage.setTitle("Cloning Capabilities");
             helpStage.setScene(scene);
             helpStage.show();
@@ -109,35 +146,48 @@ public class ConfigScreen implements Initializable {
             return;
         }
 
-        // Save configurations
         updateConfigModel();
-        
+
+        List<DriveItem> selectedItems = DriveContentController.getSelectedItems();
+        if (selectedItems == null || selectedItems.isEmpty()) {
+            // No items selected yet, navigate to drive content view to select files
+            try {
+                FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/drive-content.fxml"));
+                Scene scene = new Scene(loader.load());
+                scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
+
+                DriveContentController controller = loader.getController();
+                controller.setDriveService(App.getDriveService());
+
+                App.setScene(scene);
+            } catch (Exception e) {
+                showAlert("Error", "Could not load drive content view: " + e.getMessage());
+            }
+            return;
+        }
+
+        // Items already selected, proceed to download
         try {
-            // Load drive content view with service
-            FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/drive-content.fxml"));
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/downloadView.fxml"));
             Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
 
-            // Get controller and set service
-            DriveContentController controller = loader.getController();
-            controller.setDriveService(App.getDriveService());
+            DownloadController controller = loader.getController();
+            controller.startDownloads(selectedItems, 4); // Use 4 threads for downloading
 
-            // Set the scene
             App.setScene(scene);
         } catch (Exception e) {
-            showAlert("Error", "Could not load drive content view: " + e.getMessage());
+            showAlert("Error", "Could not load download view: " + e.getMessage());
         }
     }
-    
+
     private void updateConfigModel() {
         ConfigModel config = App.getConfig();
-        
-        // Update export formats using the MimeTypeMapping utility
-        config.setExportFormat(MimeTypeMapping.DOCS_MIME_TYPE, docsFormatBox.getValue());
-        config.setExportFormat(MimeTypeMapping.SHEETS_MIME_TYPE, sheetsFormatBox.getValue());
-        config.setExportFormat(MimeTypeMapping.SLIDES_MIME_TYPE, slidesFormatBox.getValue());
-        config.setExportFormat(MimeTypeMapping.DRAWING_MIME_TYPE, drawingsFormatBox.getValue());
-        config.setExportFormat(MimeTypeMapping.JAMBOARD_MIME_TYPE, jamboardFormatBox.getValue());
+        config.setExportFormat(GoogleMime.DOCS, docsFormatBox.getValue());
+        config.setExportFormat(GoogleMime.SHEETS, sheetsFormatBox.getValue());
+        config.setExportFormat(GoogleMime.SLIDES, slidesFormatBox.getValue());
+        config.setExportFormat(GoogleMime.DRAWINGS, drawingsFormatBox.getValue());
+        config.setExportFormat(GoogleMime.JAMBOARD, jamboardFormatBox.getValue());
     }
 
     private void showAlert(String title, String content) {

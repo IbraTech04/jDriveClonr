@@ -22,8 +22,14 @@ public class AuthController {
             DriveAPIService driveService = new DriveAPIService(credential);
             App.setDriveService(driveService);
 
-            // Navigate to config screen
-            App.navigateTo("config.fxml");
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/drive-content.fxml"));
+            Scene scene = new Scene(loader.load());
+            scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
+
+            DriveContentController controller = loader.getController();
+            controller.setDriveService(App.getDriveService());
+
+            App.setScene(scene);
             
         } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
