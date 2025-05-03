@@ -76,30 +76,6 @@ public class FileUtils {
         return "";
     }
 
-
-    /**
-     * Downloads a file from a given export link using the provided token.
-     * This is used to bypass the Google Drive API file download limit.
-     * @param token The authorization token to access the file.
-     * @param link The export link of the file to download.
-     * @return The byte array of the downloaded file.
-     * @throws IOException If an I/O error occurs during the download.
-     */
-    public static byte[] downloadFromExportLink(String token, String link) throws IOException {
-        URL url = new URL(link);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestProperty("Authorization", "Bearer " + token);
-        connection.setRequestMethod("GET");
-
-        try (InputStream in = connection.getInputStream()) {
-            if (connection.getResponseCode() == 200) {
-                return in.readAllBytes();
-            } else {
-                throw new IOException("Failed to download file: " + connection.getResponseCode());
-            }
-        }
-    }
-
     /**
      * Checks if the current windows installation has long path support enabled.
      * @return true if long path support is enabled (or this is a non-nt OS), false otherwise.

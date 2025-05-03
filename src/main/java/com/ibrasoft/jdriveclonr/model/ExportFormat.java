@@ -17,9 +17,8 @@ public enum ExportFormat {
     TXT("Plain Text (.txt)", "text/plain", ".txt"),
     HTML("HTML (.html)", "text/html", ".html"),
     CSV("CSV (.csv)", "text/csv", ".csv"),
-
-    MARKDOWN("Markdown (.md)", "text/markdown", ".md");
-
+    MARKDOWN("Markdown (.md)", "text/markdown", ".md"),
+    DEFAULT("Default", "application/vnd.google-apps.unknown", "");
     private final String uiLabel;
     private final String mimeType;
     private final String extension;
@@ -47,5 +46,14 @@ public enum ExportFormat {
             case GoogleMime.JAMBOARD -> list.addAll(List.of(PDF, PNG));
         }
         return list;
+    }
+
+    public static String getFileExtensionFromMimeType(String mimeType) {
+        for (ExportFormat format : values()) {
+            if (format.mimeType.equalsIgnoreCase(mimeType)) {
+                return format.extension;
+            }
+        }
+        return "";
     }
 }

@@ -25,7 +25,7 @@ public class ConfigModel {
     }
 
     public ExportFormat getExportFormat(String googleMimeType) {
-        return exportFormats.get(googleMimeType);
+        return exportFormats.getOrDefault(googleMimeType, ExportFormat.DEFAULT);
     }
 
     public String getUiValueForType(String googleMimeType) {
