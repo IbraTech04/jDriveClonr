@@ -5,7 +5,10 @@ import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -107,5 +110,35 @@ public class FileUtils {
     public static boolean checkFileExists(String filePath, String fileName) {
         File file = new File(filePath, fileName);
         return file.exists();
+    }
+
+    /**
+     * Returns the number of free bytes on the drive that backs the given path.
+     */
+    public static long getFreeBytes(String pathStr) throws Exception {
+        Path path = Paths.get(pathStr);
+        FileStore store = Files.getFileStore(path);
+        return (store.getUsableSpace());
+    }
+
+    /**
+     * Convenience helper that formats the result nicely (MiB / GiB, etc.).
+     */
+
+
+    public static String formatSize(long bytes) {
+        if (bytes < 1024) {
+            return bytes + " B";
+        }
+        double kb = bytes / 1024.0;
+        if (kb < 1024) {
+            return String.format("%.1f KB", kb);
+        }
+        double mb = kb / 1024.0;
+        if (mb < 1024) {
+            return String.format("%.1f MB", mb);
+        }
+        double gb = mb / 1024.0;
+        return String.format("%.2f GB", gb);
     }
 }

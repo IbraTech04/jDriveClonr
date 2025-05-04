@@ -43,15 +43,19 @@ public class DriveAPIService {
     }
 
     public DriveItem fetchOwnedFiles() throws IOException {
-        return convertFilesToDriveItemTree(fetchFiles("'me' in owners and trashed = false and mimeType != 'application/vnd.google-apps.form'"), "My Files");
+        return convertFilesToDriveItemTree(fetchFiles("'me' in owners and trashed = false and mimeType != 'application/vnd.google-apps.form' and mimeType != 'application/vnd.google-apps.shortcut'"), "My Files");
     }
 
     public DriveItem fetchSharedFiles() throws IOException {
-        return convertFilesToDriveItemTree(fetchFiles("sharedWithMe = true and trashed = false and mimeType != 'application/vnd.google-apps.form'"), "Shared with Me");
+        return convertFilesToDriveItemTree(fetchFiles("(not 'me' in owners or sharedWithMe = true) and trashed = false and mimeType != 'application/vnd.google-apps.form'"), "Shared with Me");
+    }
+
+    public List<File> fetchSharedFilesRaw() throws IOException {
+        return fetchFiles("(not 'me' in owners or sharedWithMe = true) and trashed = false and mimeType != 'application/vnd.google-apps.form'");
     }
 
     public DriveItem fetchTrashedFiles() throws IOException {
-        return convertFilesToDriveItemTree(fetchFiles("trashed = true"), "Trash and mimeType != 'application/vnd.google-apps.form'");
+        return convertFilesToDriveItemTree(fetchFiles("trashed = true"), "Trash");
     }
 
     private List<File> fetchFiles(String query) throws IOException {
@@ -60,7 +64,7 @@ public class DriveAPIService {
         do {
             FileList result = driveService.files().list()
                     .setQ(query + " and mimeType != 'application/vnd.google-apps.form'" +
-                            "and mimeType != 'application/vnd.google-apps.shortcut'" + // Not a shortcut
+                            "" + // Not a shortcut
                             "")
                     .setFields("nextPageToken, files(id, name, mimeType, parents, modifiedTime, size, shared)")
                     .setPageToken(pageToken)

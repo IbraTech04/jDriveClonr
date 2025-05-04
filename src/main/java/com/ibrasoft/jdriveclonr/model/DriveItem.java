@@ -27,8 +27,8 @@ public class DriveItem {
     }
 
     public boolean isFolder() {
-//        return "application/vnd.google-apps.folder".equalsIgnoreCase(mimeType);
-        return !this.children.isEmpty();
+        return "application/vnd.google-apps.folder".equalsIgnoreCase(mimeType) ||
+                "virtual/root".equalsIgnoreCase(mimeType);
     }
 
     public String toString() {
@@ -52,8 +52,13 @@ public class DriveItem {
     public CheckBoxTreeItem<DriveItem> toCheckBoxTreeItem() {
         CheckBoxTreeItem<DriveItem> itemTree = new CheckBoxTreeItem<>(this, null, true);
 
+        // Sort children such that folders are first, and they're sorted by name
+        List<DriveItem> sortedChildren = children.stream()
+                .sorted(Comparator.comparing(DriveItem::isFolder).reversed()
+                        .thenComparing(DriveItem::getName))
+                .collect(Collectors.toList());
         // Recurse over children
-        for (DriveItem child : this.getChildren()) {
+        for (DriveItem child : sortedChildren) {
             itemTree.getChildren().add(child.toCheckBoxTreeItem());
         }
         return itemTree;

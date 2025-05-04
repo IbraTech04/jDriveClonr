@@ -58,18 +58,20 @@ public class DriveContentController implements Initializable {
             @Override
             protected TreeItem<DriveItem> call() throws Exception {
                 // 1. Fetch data (off FX thread)
-                DriveItem ownedRoot   = driveService.fetchOwnedFiles();   // already a hierarchy
-                DriveItem sharedRoot  = driveService.fetchSharedFiles();  // idem
+                DriveItem ownedRoot   = driveService.fetchOwnedFiles();
+                DriveItem sharedRoot  = driveService.fetchSharedFiles();
+                DriveItem trashRoot = driveService.fetchTrashedFiles();
 
                 // 2. Build CheckBoxTreeItems (still off FX thread – ok)
                 CheckBoxTreeItem<DriveItem> ownedNode  = toCheckBoxTreeItem(ownedRoot);
                 CheckBoxTreeItem<DriveItem> sharedNode = toCheckBoxTreeItem(sharedRoot);
+                CheckBoxTreeItem<DriveItem> trashNode = toCheckBoxTreeItem(trashRoot);
 
                 // Synthetic invisible root that holds both branches
                 DriveItem virtualRootValue = new DriveItem(
                         "virtual-root", "Google Drive", "virtual/root", ownedRoot.getSize() + sharedRoot.getSize(), null, false, new ArrayList<>());
                 CheckBoxTreeItem<DriveItem> virtualRoot = new CheckBoxTreeItem<>(virtualRootValue);
-                virtualRoot.getChildren().addAll(ownedNode, sharedNode);
+                virtualRoot.getChildren().addAll(ownedNode, sharedNode, trashNode);
                 virtualRoot.setSelected(true);
                 return virtualRoot;
             }

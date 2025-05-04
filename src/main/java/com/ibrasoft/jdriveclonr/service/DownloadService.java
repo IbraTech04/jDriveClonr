@@ -79,7 +79,8 @@ public class DownloadService {
             // If the file already exists, append a number to the end of the file
             int i = 1;
             while (new File(currPath, newName).exists()) {
-                newName = FileUtils.sanitizeFilename(d.getName()) + "_" + i++;
+                String baseFileNameWtihoutExtension = d.getName().substring(0, newName.lastIndexOf('.'));
+                newName = FileUtils.sanitizeFilename(baseFileNameWtihoutExtension) + "_" + i++;
             }
 
             // Add the necessary extension to the file

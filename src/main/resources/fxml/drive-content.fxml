@@ -21,6 +21,8 @@
         <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="10" style="-fx-background-color: rgba(255,255,255,0.8);">
             <ProgressIndicator fx:id="progressIndicator" />
             <Label text="Loading your drive..." />
+            <Label text="Fun fact: We're currently parsing your Google Drive into what's known as an Expression Tree.
+            This allows us to efficiently manage and clone your files. It's a bit like building a map of your drive, so we can navigate it easily!" style="-fx-font-size: 12px;"/>
         </VBox>
     </StackPane>
     

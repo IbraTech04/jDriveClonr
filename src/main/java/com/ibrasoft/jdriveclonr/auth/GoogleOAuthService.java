@@ -16,7 +16,9 @@ import java.security.GeneralSecurityException;
 import java.util.List;
 
 public class GoogleOAuthService {
-    private static final List<String> SCOPES = List.of(DriveScopes.DRIVE_READONLY);
+    // TODO: Figure out what the enum for PhotosScopes is
+    // TFW even the official docs don't use them ;(
+    private static final List<String> SCOPES = List.of(DriveScopes.DRIVE_READONLY, "https://www.googleapis.com/auth/photoslibrary.readonly");
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";

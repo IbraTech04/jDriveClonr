@@ -5,6 +5,7 @@ import com.ibrasoft.jdriveclonr.model.ConfigModel;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
+import com.ibrasoft.jdriveclonr.utils.FileUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -141,9 +142,19 @@ public class ConfigController implements Initializable {
     }
 
     @FXML
-    public void onStartClicked(ActionEvent event) {
+    public void onStartClicked(ActionEvent event) throws Exception {
         if (destinationField.getText().isEmpty()) {
             showAlert("Error", "Please select a destination folder.");
+            return;
+        }
+
+        // Calculate the total size of the selected items, and the space remaining in the destination drive
+        // If the destination drive is full, show an alert and return
+
+        long totalSelectedSize = DriveContentController.getSelectedRoot().getSize();
+        long availableSpace = FileUtils.getFreeBytes(destinationField.getText());
+        if (totalSelectedSize > availableSpace) {
+            showAlert("Error", "The selected files require " + FileUtils.formatSize(totalSelectedSize) + " of free space. Your destination drive doesn't have enough room. Please either free up some space, choose a different drive, or select fewer files.");
             return;
         }
 

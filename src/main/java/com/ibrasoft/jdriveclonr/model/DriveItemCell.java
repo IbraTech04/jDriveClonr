@@ -1,5 +1,6 @@
 package com.ibrasoft.jdriveclonr.model;
 
+import com.ibrasoft.jdriveclonr.utils.FileUtils;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.cell.CheckBoxTreeCell;
@@ -38,9 +39,9 @@ public class DriveItemCell extends CheckBoxTreeCell<DriveItem> {
 
         StringBuilder details = new StringBuilder();
         if (item.isFolder()) {
-            details.append("📁 ");
+            details.append("📁 ").append(FileUtils.formatSize(item.getSize())).append(" • ");;
         } else {
-            details.append("📄 ").append(formatSize(item.getSize())).append(" • ");
+            details.append("📄 ").append(FileUtils.formatSize(item.getSize())).append(" • ");
         }
         if (item.isShared()) details.append("👥 • ");
         detailsLabel.setText(details.toString());
@@ -55,21 +56,5 @@ public class DriveItemCell extends CheckBoxTreeCell<DriveItem> {
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
     }
 
-
-    private String formatSize(long bytes) {
-        if (bytes < 1024) {
-            return bytes + " B";
-        }
-        double kb = bytes / 1024.0;
-        if (kb < 1024) {
-            return String.format("%.1f KB", kb);
-        }
-        double mb = kb / 1024.0;
-        if (mb < 1024) {
-            return String.format("%.1f MB", mb);
-        }
-        double gb = mb / 1024.0;
-        return String.format("%.2f GB", gb);
-    }
 }
 
