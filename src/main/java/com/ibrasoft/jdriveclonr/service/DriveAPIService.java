@@ -79,7 +79,9 @@ public class DriveAPIService {
                         });
 
         List<File> files = fetchFiles("(trashed = false) and sharedWithMe");
-        virtualRoot.setChildren(convertFileToDriveItems(files));
+        virtualRoot.setChildren(convertFileToDriveItems(files.stream()
+                .filter(file -> file.getParents() == null || file.getParents().isEmpty())
+                .toList()));
 
         return virtualRoot;
     }
@@ -123,78 +125,6 @@ public class DriveAPIService {
             driveItems.add(driveItem);
         }
         return driveItems;
-    }
-
-    /**
-     * Builds a DriveItem tree from a flat list of Google Drive File objects.
-     *
-     * @param files flat list returned by the Drive API
-     * @param rootName label to show on the synthetic root (e.g. “My Drive”)
-     * @return a virtual‑root DriveItem whose children form the full tree
-     */
-    private DriveItem convertFilesToDriveItemTree(List<File> files, String rootName) {
-        DriveItem virtualRoot =
-                new DriveItem("virtual-root", rootName, "virtual/root",
-                        0, null, false, new ArrayList<>(), null);
-
-        /* ---------------- PASS 1 – build a lookup of every node ---------------- */
-        Map<String, DriveItem> idToItem = new HashMap<>();
-
-        for (File f : files) {
-            idToItem.put(
-                    f.getId(),
-                    new DriveItem(
-                            f.getId(),
-                            f.getName(),
-                            f.getMimeType(),
-                            f.getSize() == null ? 0 : f.getSize(),
-                            f.getModifiedTime(),
-                            f.getShared(),
-                            new ArrayList<>(),
-                            () -> {
-                                try {
-                                    return convertFileToDriveItems(fetchFiles("'" + f.getId() + "' in parents"));
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                    ));
-        }
-
-        /* ---------------- PASS 2 – wire up parent / child links ---------------- */
-        Set<String> attachedAsChild = new HashSet<>();
-
-        for (File f : files) {
-            List<String> parents = f.getParents();
-            if (parents == null || parents.isEmpty()) {
-                virtualRoot.getChildren().add(idToItem.get(f.getId()));
-                virtualRoot.setSize(virtualRoot.getSize() + (f.getSize() == null? 0 : f.getSize()));
-                continue;
-            }
-
-            // Attach to the first parent we actually have in the list.
-            // (Google Drive can report multiple parents, but modern UI rarely creates them.)
-            boolean linked = false;
-            for (String parentId : parents) {
-                DriveItem parent = idToItem.get(parentId);
-                if (parent != null) {
-                    parent.getChildren().add(idToItem.get(f.getId()));
-                    parent.setSize(parent.getSize() + (f.getSize() == null? 0 : f.getSize()));
-                    attachedAsChild.add(f.getId());
-                    linked = true;
-                    break;
-                }
-            }
-
-            // If none of the declared parents were in the download set,
-            // treat this as a top‑level item
-            if (!linked) {
-                virtualRoot.getChildren().add(idToItem.get(f.getId()));
-                virtualRoot.setSize(virtualRoot.getSize() + (f.getSize() == null? 0 : f.getSize()));
-            }
-        }
-
-        return virtualRoot;
     }
 
     public ByteArrayOutputStream downloadFile(String fileID, ExportFormat mime) throws IOException {

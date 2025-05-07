@@ -27,6 +27,15 @@ public class DriveItem {
     private List<DriveItem> children;
     private Supplier<List<DriveItem>> next;
 
+    public void setChildren(List<DriveItem> children) {
+        // sort children based on type and name
+        children = children.stream()
+                .sorted(Comparator.comparing(DriveItem::isFolder).reversed()
+                        .thenComparing(DriveItem::getName))
+                .collect(Collectors.toList());
+        this.children = children;
+    }
+
     public void clearChildren() {
         children.clear();
     }
@@ -99,7 +108,11 @@ public class DriveItem {
                 parent.getChildren().add(new CheckBoxTreeItem<>(emptyItem));
                 return;
             }
-
+            // sort children based on type and name
+            children = children.stream()
+                    .sorted(Comparator.comparing(DriveItem::isFolder).reversed()
+                            .thenComparing(DriveItem::getName))
+                    .toList();
             for (DriveItem child : children) {
                 parent.getChildren().add(child.toLazyTreeItem());
             }

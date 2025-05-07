@@ -10,11 +10,13 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+import java.util.Objects;
+
 public class App extends Application {
     private static Stage primaryStage;
     private static ConfigModel configModel;
+    @Getter
+    @Setter
     private static DriveAPIService driveService;
 
     @Override
@@ -25,7 +27,7 @@ public class App extends Application {
         primaryStage.setTitle("DriveClonr");
         
         // Set application icon
-        Image icon = new Image(getClass().getResourceAsStream("/DriveClonrLogo.ico"));
+        Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/DriveClonrLogo.ico")));
         primaryStage.getIcons().add(icon);
         
         primaryStage.show();
@@ -35,7 +37,7 @@ public class App extends Application {
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/" + fxml));
             Scene scene = new Scene(loader.load());
-            scene.getStylesheets().add(App.class.getResource("/styles/main.css").toExternalForm());
+            scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/styles/main.css")).toExternalForm());
             primaryStage.setScene(scene);
         } catch (Exception e) {
             e.printStackTrace();
@@ -45,6 +47,10 @@ public class App extends Application {
     public static void setScene(Scene scene) {
         primaryStage.setScene(scene);
     }
+
+//    public static DriveAPIService getDriveService(){
+//        return driveService;
+//    }
 
     public static ConfigModel getConfig() {
         return configModel;

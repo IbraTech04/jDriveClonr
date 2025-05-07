@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -34,16 +35,23 @@ public class DownloadController implements javafx.fxml.Initializable {
     @FXML private ListView<Task<?>> threadList;
     @FXML private Button cancelBtn;
     @FXML private Button closeBtn;
+    @FXML private Slider threadSlider; // New UI element for thread count adjustment
+    @FXML private Label threadCountLabel; // New UI element to display thread count
 
     /* -------- DI -------- */
     private final DownloadService service;
     private Task<?> downloadTask;
     private final DecimalFormat percentFormat = new DecimalFormat("0.0%");
     private final AtomicInteger fileCount = new AtomicInteger(0);
+    private final ObservableList<Task<?>> activeTasks = FXCollections.observableArrayList();
 
     public DownloadController() {
         this.service = new DownloadService();
         this.service.setService(App.getDriveService());
+
+        // Set default thread count based on available processors
+        int defaultThreads = Math.max(2, Runtime.getRuntime().availableProcessors() - 1);
+        this.service.setMaxThreads(defaultThreads);
     }
 
     /* -------- init -------- */
@@ -52,6 +60,32 @@ public class DownloadController implements javafx.fxml.Initializable {
         // Set initial states
         percentLabel.setText("0%");
         threadsCountLabel.setText("0 files");
+
+        // Configure thread slider if it exists in the FXML
+        if (threadSlider != null) {
+            threadSlider.setMin(1);
+            threadSlider.setMax(Math.max(8, Runtime.getRuntime().availableProcessors() * 2));
+            threadSlider.setValue(service.getMaxThreads());
+            threadSlider.setBlockIncrement(1);
+            threadSlider.setMajorTickUnit(1);
+            threadSlider.setMinorTickCount(0);
+            threadSlider.setSnapToTicks(true);
+
+            if (threadCountLabel != null) {
+                threadCountLabel.setText(String.format("Threads: %d", service.getMaxThreads()));
+            }
+
+            threadSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+                int threads = newVal.intValue();
+                service.setMaxThreads(threads);
+                if (threadCountLabel != null) {
+                    threadCountLabel.setText(String.format("Threads: %d", threads));
+                }
+            });
+        }
+
+        // Set the list to use our observable list
+        threadList.setItems(activeTasks);
 
         // Custom cell factory for download items
         threadList.setCellFactory(lv -> new ListCell<>() {
@@ -121,6 +155,25 @@ public class DownloadController implements javafx.fxml.Initializable {
                     task.progressProperty().addListener((obs, oldVal, newVal) -> {
                         if (newVal != null) {
                             percentLabel.setText(percentFormat.format(newVal.doubleValue()));
+
+                            // Remove completed tasks after a delay
+                            if (newVal.doubleValue() >= 1.0) {
+                                Platform.runLater(() -> {
+                                    // Use delayed removal to let the user see completion
+                                    new Thread(() -> {
+                                        try {
+                                            Thread.sleep(2000); // Show completed item for 2 seconds
+                                            Platform.runLater(() -> {
+                                                if (activeTasks.contains(task)) {
+                                                    activeTasks.remove(task);
+                                                }
+                                            });
+                                        } catch (InterruptedException e) {
+                                            Thread.currentThread().interrupt();
+                                        }
+                                    }).start();
+                                });
+                            }
                         }
                     });
 
@@ -150,9 +203,6 @@ public class DownloadController implements javafx.fxml.Initializable {
     }
 
     private void startDownload() {
-        ObservableList<Task<?>> tasks = FXCollections.observableArrayList();
-        threadList.setItems(tasks);
-
         downloadTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -177,7 +227,21 @@ public class DownloadController implements javafx.fxml.Initializable {
                                         threadsCountLabel.setText(count + (count == 1 ? " file" : " files"));
                                     }
                                 });
-                            }
+                            },
+                            // Add new callback for individual download tasks
+                            task -> Platform.runLater(() -> {
+                                activeTasks.add(task);
+
+                                // Add listener to track completion status
+                                task.stateProperty().addListener((obs, oldState, newState) -> {
+                                    if (newState == Worker.State.SUCCEEDED ||
+                                            newState == Worker.State.FAILED ||
+                                            newState == Worker.State.CANCELLED) {
+                                        // We don't remove immediately - let the progress bar reach 100% first
+                                        // Removal is handled in the cell factory
+                                    }
+                                });
+                            })
                     );
 
                     updateMessage("Download completed");
@@ -206,9 +270,8 @@ public class DownloadController implements javafx.fxml.Initializable {
         });
 
         overallBar.progressProperty().bind(downloadTask.progressProperty());
-        tasks.add(downloadTask);
 
-        Thread thread = new Thread(downloadTask, "Download-Thread");
+        Thread thread = new Thread(downloadTask, "Download-Coordinator");
         thread.setDaemon(true);
         thread.start();
     }
