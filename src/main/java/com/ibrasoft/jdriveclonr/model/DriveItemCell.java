@@ -24,6 +24,7 @@ public class DriveItemCell extends CheckBoxTreeCell<DriveItem> {
 //        dateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a").withZone(ZoneId.systemDefault());
     }
 
+
     @Override
     public void updateItem(DriveItem item, boolean empty) {
         super.updateItem(item, empty);
@@ -39,22 +40,27 @@ public class DriveItemCell extends CheckBoxTreeCell<DriveItem> {
 
         StringBuilder details = new StringBuilder();
         if (item.isFolder()) {
-            details.append("📁 ").append(FileUtils.formatSize(item.getSize())).append(" • ");;
+            details.append("📁 ");
         } else {
             details.append("📄 ").append(FileUtils.formatSize(item.getSize())).append(" • ");
         }
         if (item.isShared()) details.append("👥 • ");
         detailsLabel.setText(details.toString());
 
-        javafx.scene.Node check = getGraphic();
-
         HBox row = new HBox(6);
-        if (check != null) row.getChildren().add(check);
+
+        // Only add checkbox if it's not a "loading..." or "empty" item
+        if (!"loading".equals(item.getId()) && !"empty".equals(item.getId())) {
+            javafx.scene.Node check = getGraphic();
+            if (check != null) row.getChildren().add(check);
+        }
+
         row.getChildren().add(container);
 
         setGraphic(row);
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
     }
+
 
 }
 

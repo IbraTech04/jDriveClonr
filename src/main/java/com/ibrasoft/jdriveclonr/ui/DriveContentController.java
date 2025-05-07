@@ -58,18 +58,18 @@ public class DriveContentController implements Initializable {
             @Override
             protected TreeItem<DriveItem> call() throws Exception {
                 // 1. Fetch data (off FX thread)
-                DriveItem ownedRoot   = driveService.fetchOwnedFiles();
-                DriveItem sharedRoot  = driveService.fetchSharedFiles();
+                DriveItem ownedRoot   = driveService.fetchRootOwnedItems();
+                DriveItem sharedRoot  = driveService.fetchRootSharedItems();
                 DriveItem trashRoot = driveService.fetchTrashedFiles();
 
                 // 2. Build CheckBoxTreeItems (still off FX thread – ok)
-                CheckBoxTreeItem<DriveItem> ownedNode  = toCheckBoxTreeItem(ownedRoot);
-                CheckBoxTreeItem<DriveItem> sharedNode = toCheckBoxTreeItem(sharedRoot);
+                CheckBoxTreeItem<DriveItem> ownedNode  = ownedRoot.toLazyTreeItem();
+                CheckBoxTreeItem<DriveItem> sharedNode = sharedRoot.toLazyTreeItem();
                 CheckBoxTreeItem<DriveItem> trashNode = toCheckBoxTreeItem(trashRoot);
 
                 // Synthetic invisible root that holds both branches
                 DriveItem virtualRootValue = new DriveItem(
-                        "virtual-root", "Google Drive", "virtual/root", ownedRoot.getSize() + sharedRoot.getSize(), null, false, new ArrayList<>());
+                        "virtual-root", "Google Drive", "virtual/root", ownedRoot.getSize() + sharedRoot.getSize(), null, false, new ArrayList<>(), null);
                 CheckBoxTreeItem<DriveItem> virtualRoot = new CheckBoxTreeItem<>(virtualRootValue);
                 virtualRoot.getChildren().addAll(ownedNode, sharedNode, trashNode);
                 virtualRoot.setSelected(true);
@@ -147,7 +147,8 @@ public class DriveContentController implements Initializable {
                 original.getSize(),
                 original.getModifiedTime(),
                 original.isShared(),
-                new ArrayList<>()
+                new ArrayList<>(),
+                original.getNext()
         );
 
         for (TreeItem<DriveItem> child : item.getChildren()) {

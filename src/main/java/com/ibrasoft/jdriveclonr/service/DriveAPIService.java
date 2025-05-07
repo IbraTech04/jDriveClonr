@@ -3,34 +3,25 @@ package com.ibrasoft.jdriveclonr.service;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.client.http.HttpRequestInitializer;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import com.google.auth.http.HttpCredentialsAdapter;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
 public class DriveAPIService {
     private final Drive driveService;
     private final Credential googleCreds;
+
 
     public DriveAPIService(Credential credential) throws GeneralSecurityException, IOException {
         this.googleCreds = credential;
@@ -46,14 +37,6 @@ public class DriveAPIService {
         return convertFilesToDriveItemTree(fetchFiles("'me' in owners and trashed = false and mimeType != 'application/vnd.google-apps.form' and mimeType != 'application/vnd.google-apps.shortcut'"), "My Files");
     }
 
-    public DriveItem fetchSharedFiles() throws IOException {
-        return convertFilesToDriveItemTree(fetchFiles("(not 'me' in owners or sharedWithMe = true) and trashed = false and mimeType != 'application/vnd.google-apps.form'"), "Shared with Me");
-    }
-
-    public List<File> fetchSharedFilesRaw() throws IOException {
-        return fetchFiles("(not 'me' in owners or sharedWithMe = true) and trashed = false and mimeType != 'application/vnd.google-apps.form'");
-    }
-
     public DriveItem fetchTrashedFiles() throws IOException {
         return convertFilesToDriveItemTree(fetchFiles("trashed = true"), "Trash");
     }
@@ -64,8 +47,7 @@ public class DriveAPIService {
         do {
             FileList result = driveService.files().list()
                     .setQ(query + " and mimeType != 'application/vnd.google-apps.form'" +
-                            "" + // Not a shortcut
-                            "")
+                            "and mimeType != 'application/vnd.google-apps.shortcut' and mimeType != 'application/vnd.google-apps.drive-sdk'")
                     .setFields("nextPageToken, files(id, name, mimeType, parents, modifiedTime, size, shared)")
                     .setPageToken(pageToken)
                     .setPageSize(1000)
@@ -74,6 +56,69 @@ public class DriveAPIService {
             pageToken = result.getNextPageToken();
         } while (pageToken != null);
         return files;
+    }
+
+    public List<DriveItem> fetchFilesFromFolder(String folderId) throws IOException {
+        List<File> files = fetchFiles("'" + folderId + "' in parents and trashed = false");
+        return convertFileToDriveItems(files);
+    }
+
+    public DriveItem fetchRootOwnedItems() throws IOException {
+        DriveItem virtualRoot =
+                new DriveItem("root", "My Files", "virtual/root",
+                        0, null, false, new ArrayList<>(), () -> {
+                            try {
+                                return convertFileToDriveItems(fetchFiles("'root' in parents and trashed = false and 'me' in owners"));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+
+        List<File> files = fetchFiles("'root' in parents and trashed = false and 'me' in owners");
+        virtualRoot.setChildren(convertFileToDriveItems(files));
+
+        return virtualRoot;
+    }
+
+    public DriveItem fetchRootSharedItems() throws IOException {
+        DriveItem virtualRoot =
+                new DriveItem("root", "Shared With Me", "virtual/root",
+                        0, null, false, new ArrayList<>(), () -> {
+                            try {
+                                return convertFileToDriveItems(fetchFiles("(trashed = false) and sharedWithMe"));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+
+        List<File> files = fetchFiles("(trashed = false) and sharedWithMe");
+        virtualRoot.setChildren(convertFileToDriveItems(files));
+
+        return virtualRoot;
+    }
+
+    public List<DriveItem> convertFileToDriveItems(List<File> files) {
+        List<DriveItem> driveItems = new ArrayList<>();
+        for (File file : files) {
+            DriveItem driveItem = new DriveItem(
+                    file.getId(),
+                    file.getName(),
+                    file.getMimeType(),
+                    file.getSize() == null ? 0 : file.getSize(),
+                    file.getModifiedTime(),
+                    file.getShared(),
+                    new ArrayList<>(),
+                    () -> {
+                        try {
+                            return convertFileToDriveItems(fetchFiles("'" + file.getId() + "' in parents"));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
+            driveItems.add(driveItem);
+        }
+        return driveItems;
     }
 
     /**
@@ -86,7 +131,7 @@ public class DriveAPIService {
     private DriveItem convertFilesToDriveItemTree(List<File> files, String rootName) {
         DriveItem virtualRoot =
                 new DriveItem("virtual-root", rootName, "virtual/root",
-                        0, null, false, new ArrayList<>());
+                        0, null, false, new ArrayList<>(), null);
 
         /* ---------------- PASS 1 – build a lookup of every node ---------------- */
         Map<String, DriveItem> idToItem = new HashMap<>();
@@ -101,7 +146,14 @@ public class DriveAPIService {
                             f.getSize() == null ? 0 : f.getSize(),
                             f.getModifiedTime(),
                             f.getShared(),
-                            new ArrayList<>()
+                            new ArrayList<>(),
+                            () -> {
+                                try {
+                                    return convertFileToDriveItems(fetchFiles("'" + f.getId() + "' in parents"));
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
                     ));
         }
 

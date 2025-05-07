@@ -1,5 +1,6 @@
 package com.ibrasoft.jdriveclonr.service;
 
+import com.google.api.client.util.DateTime;
 import com.ibrasoft.jdriveclonr.model.ConfigModel;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
@@ -11,6 +12,7 @@ import lombok.Data;
 
 import java.io.*;
 import java.nio.file.*;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -68,6 +70,11 @@ public class DownloadService {
             updateMessage("Creating folder: " + d.getName());
             File folder = new File(currPath, FileUtils.sanitizeFilename(d.getName()));
             folder.mkdirs();
+            this.setLastModifiedFromDateTime(folder.getAbsoluteFile(), d.getModifiedTime());
+            if (!d.isLoaded()){
+                d.clearChildren();
+                d.setChildren(d.getNext().get());
+            }
             for (DriveItem child : d.getChildren()) {
                 downloadFile(child, folder, config);
             }
@@ -79,8 +86,13 @@ public class DownloadService {
             // If the file already exists, append a number to the end of the file
             int i = 1;
             while (new File(currPath, newName).exists()) {
-                String baseFileNameWtihoutExtension = d.getName().substring(0, newName.lastIndexOf('.'));
-                newName = FileUtils.sanitizeFilename(baseFileNameWtihoutExtension) + "_" + i++;
+                String baseFileName = d.getName();
+                int dotIndex = baseFileName.lastIndexOf('.');
+                if (dotIndex > 0) {
+                    baseFileName = baseFileName.substring(0, dotIndex);
+                }
+                baseFileName = FileUtils.sanitizeFilename(baseFileName);
+                newName = baseFileName + "_" + i++;
             }
 
             // Add the necessary extension to the file
@@ -91,10 +103,28 @@ public class DownloadService {
             try (OutputStream out = new FileOutputStream(new File(currPath, newName))) {
                 stream.writeTo(out);
                 updateProgress(d.getSize());
+                setLastModifiedFromDateTime(new File(currPath, newName), d.getModifiedTime());
             } catch (IOException e) {
                 throw new IOException("Error writing file: " + d.getName(), e);
             }
         }
+    }
+
+    /**
+     * Sets the last modified time of a file to match the given Google DateTime.
+     *
+     * @param filePath The file to update.
+     * @param dateTime The Google API client DateTime.
+     * @throws IOException If setting the file time fails.
+     */
+    public static void setLastModifiedFromDateTime(File filePath, DateTime dateTime) throws IOException {
+        if (!filePath.exists()) {
+            throw new IllegalArgumentException("File does not exist: " + filePath);
+        }
+
+        Path path = filePath.toPath();
+        FileTime fileTime = FileTime.fromMillis(dateTime.getValue());
+        Files.setLastModifiedTime(path, fileTime);
     }
 
     private void updateProgress(long bytes) {
