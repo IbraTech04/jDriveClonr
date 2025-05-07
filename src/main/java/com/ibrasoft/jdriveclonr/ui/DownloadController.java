@@ -17,11 +17,11 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -164,9 +164,7 @@ public class DownloadController implements javafx.fxml.Initializable {
                                         try {
                                             Thread.sleep(2000); // Show completed item for 2 seconds
                                             Platform.runLater(() -> {
-                                                if (activeTasks.contains(task)) {
-                                                    activeTasks.remove(task);
-                                                }
+                                                activeTasks.remove(task);
                                             });
                                         } catch (InterruptedException e) {
                                             Thread.currentThread().interrupt();
@@ -294,7 +292,7 @@ public class DownloadController implements javafx.fxml.Initializable {
 
         // Style the alert
         DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add(getClass().getResource("/styles/alert.css").toExternalForm());
+        dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/alert.css")).toExternalForm());
         dialogPane.getStyleClass().add("error-dialog");
 
         alert.showAndWait();

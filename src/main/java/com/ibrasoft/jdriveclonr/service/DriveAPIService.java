@@ -160,10 +160,10 @@ public class DriveAPIService {
 
     /**
      * Returns the export link for a given file ID and export format.
-     * @param fileId
-     * @param mime
-     * @return
-     * @throws IOException
+     * @param fileId the ID of the file to export
+     * @param mime the export format to use
+     * @return the export link for the file
+     * @throws IOException if the request fails or an I/O error occurs
      */
     public String fetchExportLinksFromFileId(String fileId, ExportFormat mime) throws IOException {
         File file = driveService.files().get(fileId)

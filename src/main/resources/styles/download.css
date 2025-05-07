@@ -1,0 +1,85 @@
+/*
+ * Simple Material‑inspired skin for the download window.
+ * Adjust colours here to match the rest of your app.
+ */
+
+.root {
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #202124;
+    -fx-background-color: #fafafa;
+}
+
+/********* Section headings *********/
+.section-header {
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #5f6368;
+}
+
+/********* Overall progress *********/
+.percent-label {
+    -fx-font-weight: 600;
+    -fx-text-fill: #1a73e8;
+}
+
+.progress-bar {
+    -fx-accent: #1a73e8;             /* fill colour */
+    -fx-control-inner-background: #e8eaed; /* track colour */
+    -fx-background-radius: 4px;
+    -fx-pref-height: 10px;
+}
+
+/********* Active download cell *********/
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 6 0 6 0;
+}
+
+.list-cell:hover {
+    -fx-background-color: rgba(26,115,232,0.06);
+}
+
+/********* Buttons *********/
+.button {
+    -fx-background-radius: 6px;
+    -fx-pref-height: 32px;
+    -fx-cursor: hand;
+    -fx-font-weight: 500;
+}
+
+.button#cancelBtn {
+    -fx-background-color: #f1f3f4;
+    -fx-text-fill: #5f6368;
+}
+.button#cancelBtn:hover {
+    -fx-background-color: #e8eaed;
+}
+
+.button#closeBtn {
+    -fx-background-color: #1a73e8;
+    -fx-text-fill: white;
+}
+.button#closeBtn:hover {
+    -fx-background-color: #1765cc;
+}
+
+/********* Slider (thread count) *********/
+.slider .track {
+    -fx-background-color: #e8eaed;
+}
+
+.slider .thumb {
+    -fx-background-color: #1a73e8;
+    -fx-background-radius: 50%;
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.24), 3, 0, 0, 1);
+}
+
+/********* Alert dialog *********/
+.error-dialog {
+    -fx-base: white;
+}
+.error-dialog .label {
+    -fx-text-fill: #d93025;
+    -fx-font-weight: 600;
+}
