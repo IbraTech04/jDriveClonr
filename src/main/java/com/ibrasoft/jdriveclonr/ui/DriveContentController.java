@@ -7,18 +7,15 @@ import com.ibrasoft.jdriveclonr.service.DriveAPIService;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import lombok.Getter;
 
-import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 public class DriveContentController implements Initializable {
 
@@ -60,12 +57,12 @@ public class DriveContentController implements Initializable {
                 // 1. Fetch data (off FX thread)
                 DriveItem ownedRoot   = driveService.fetchRootOwnedItems();
                 DriveItem sharedRoot  = driveService.fetchRootSharedItems();
-                DriveItem trashRoot = driveService.fetchTrashedFiles();
+                DriveItem trashRoot = driveService.fetchRootTrashedItems();
 
                 // 2. Build CheckBoxTreeItems (still off FX thread – ok)
                 CheckBoxTreeItem<DriveItem> ownedNode  = ownedRoot.toLazyTreeItem();
                 CheckBoxTreeItem<DriveItem> sharedNode = sharedRoot.toLazyTreeItem();
-                CheckBoxTreeItem<DriveItem> trashNode = toCheckBoxTreeItem(trashRoot);
+                CheckBoxTreeItem<DriveItem> trashNode = trashRoot.toLazyTreeItem();
 
                 // Synthetic invisible root that holds both branches
                 DriveItem virtualRootValue = new DriveItem(
@@ -99,17 +96,6 @@ public class DriveContentController implements Initializable {
         Thread t = new Thread(loadTask, "DriveContentLoader");
         t.setDaemon(true);
         t.start();
-    }
-
-    /* ----------  Helpers ---------- */
-
-    /** Recursively converts a DriveItem hierarchy into CheckBoxTreeItems. */
-    private CheckBoxTreeItem<DriveItem> toCheckBoxTreeItem(DriveItem node) {
-        CheckBoxTreeItem<DriveItem> treeItem = new CheckBoxTreeItem<>(node, null, true);
-        for (DriveItem child : node.getChildren()) {
-            treeItem.getChildren().add(toCheckBoxTreeItem(child));
-        }
-        return treeItem;
     }
 
     private void updateCloneButtonState() {

@@ -7,7 +7,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class App extends Application {
     private static Stage primaryStage;
     private static ConfigModel configModel;
@@ -44,14 +48,6 @@ public class App extends Application {
 
     public static ConfigModel getConfig() {
         return configModel;
-    }
-
-    public static void setDriveService(DriveAPIService service) {
-        driveService = service;
-    }
-
-    public static DriveAPIService getDriveService() {
-        return driveService;
     }
 
     public static void main(String[] args) {

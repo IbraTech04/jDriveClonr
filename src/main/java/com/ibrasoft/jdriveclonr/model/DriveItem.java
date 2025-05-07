@@ -42,9 +42,7 @@ public class DriveItem {
 
     private String toStringHelper(int indentAmount) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < indentAmount; i++) {
-            sb.append("  ");
-        }
+        sb.append("  ".repeat(Math.max(0, indentAmount)));
         sb.append(name).append("\n");
         if (children != null) {
             for (DriveItem child : children) {
@@ -54,20 +52,6 @@ public class DriveItem {
         return sb.toString();
     }
 
-    public CheckBoxTreeItem<DriveItem> toCheckBoxTreeItem() {
-        CheckBoxTreeItem<DriveItem> itemTree = new CheckBoxTreeItem<>(this, null, true);
-
-        // Sort children such that folders are first, and they're sorted by name
-        List<DriveItem> sortedChildren = children.stream()
-                .sorted(Comparator.comparing(DriveItem::isFolder).reversed()
-                        .thenComparing(DriveItem::getName))
-                .collect(Collectors.toList());
-        // Recurse over children
-        for (DriveItem child : sortedChildren) {
-            itemTree.getChildren().add(child.toCheckBoxTreeItem());
-        }
-        return itemTree;
-    }
     public CheckBoxTreeItem<DriveItem> toLazyTreeItem() {
         CheckBoxTreeItem<DriveItem> treeItem = new CheckBoxTreeItem<>(this);
         treeItem.setExpanded(false);
@@ -89,14 +73,13 @@ public class DriveItem {
     }
 
     private boolean isPlaceholder(ObservableList<TreeItem<DriveItem>> children) {
-        return children.size() == 1 && "loading".equals(children.get(0).getValue().getId());
+        return children.size() == 1 && "loading".equals(children.getFirst().getValue().getId());
     }
 
     private void loadChildrenAsync(CheckBoxTreeItem<DriveItem> parent, DriveItem item) {
         Task<List<DriveItem>> loadTask = new Task<>() {
             @Override
-            protected List<DriveItem> call() throws InterruptedException {
-//                return fetchChildren(item); // implement this to return children
+            protected List<DriveItem> call()  {
                 System.out.println("Loading children for: " + item.getId());
                 if (!item.getChildren().isEmpty())
                     return item.getChildren();
@@ -139,10 +122,10 @@ public class DriveItem {
 
     /**
      * Checks if the DriveItem's children have been fully loaded, or if they are still lazy-loaded.
-     * @return
+     * @return true if the children are loaded, false otherwise.
      */
     public boolean isLoaded(){
-        return children != null && !children.isEmpty() && !children.get(0).getId().equals("loading");
+        return children != null && !children.isEmpty() && !children.getFirst().getId().equals("loading");
     }
 
 }

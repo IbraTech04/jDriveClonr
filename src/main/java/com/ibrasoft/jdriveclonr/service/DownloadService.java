@@ -70,7 +70,7 @@ public class DownloadService {
             updateMessage("Creating folder: " + d.getName());
             File folder = new File(currPath, FileUtils.sanitizeFilename(d.getName()));
             folder.mkdirs();
-            this.setLastModifiedFromDateTime(folder.getAbsoluteFile(), d.getModifiedTime());
+//            setLastModifiedFromDateTime(folder.getAbsoluteFile(), d.getModifiedTime());
             if (!d.isLoaded()){
                 d.clearChildren();
                 d.setChildren(d.getNext().get());

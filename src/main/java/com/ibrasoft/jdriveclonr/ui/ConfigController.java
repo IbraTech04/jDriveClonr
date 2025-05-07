@@ -190,6 +190,7 @@ public class ConfigController implements Initializable {
 
     @FXML
     private void onBackClicked(ActionEvent event) throws IOException {
-
+        // TODO: Implement back navigation
+        return;
     }
 }

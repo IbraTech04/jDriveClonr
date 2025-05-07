@@ -33,14 +33,6 @@ public class DriveAPIService {
                 .build();
     }
 
-    public DriveItem fetchOwnedFiles() throws IOException {
-        return convertFilesToDriveItemTree(fetchFiles("'me' in owners and trashed = false and mimeType != 'application/vnd.google-apps.form' and mimeType != 'application/vnd.google-apps.shortcut'"), "My Files");
-    }
-
-    public DriveItem fetchTrashedFiles() throws IOException {
-        return convertFilesToDriveItemTree(fetchFiles("trashed = true"), "Trash");
-    }
-
     private List<File> fetchFiles(String query) throws IOException {
         List<File> files = new ArrayList<>();
         String pageToken = null;
@@ -56,11 +48,6 @@ public class DriveAPIService {
             pageToken = result.getNextPageToken();
         } while (pageToken != null);
         return files;
-    }
-
-    public List<DriveItem> fetchFilesFromFolder(String folderId) throws IOException {
-        List<File> files = fetchFiles("'" + folderId + "' in parents and trashed = false");
-        return convertFileToDriveItems(files);
     }
 
     public DriveItem fetchRootOwnedItems() throws IOException {
@@ -92,6 +79,23 @@ public class DriveAPIService {
                         });
 
         List<File> files = fetchFiles("(trashed = false) and sharedWithMe");
+        virtualRoot.setChildren(convertFileToDriveItems(files));
+
+        return virtualRoot;
+    }
+
+    public DriveItem fetchRootTrashedItems() throws IOException {
+        DriveItem virtualRoot =
+                new DriveItem("root", "Trash", "virtual/root",
+                        0, null, false, new ArrayList<>(), () -> {
+                            try {
+                                return convertFileToDriveItems(fetchFiles("'root' in parents and trashed = true"));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+
+        List<File> files = fetchFiles("'root' in parents and trashed = true");
         virtualRoot.setChildren(convertFileToDriveItems(files));
 
         return virtualRoot;
