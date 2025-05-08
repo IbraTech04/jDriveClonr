@@ -3,6 +3,7 @@ package com.ibrasoft.jdriveclonr.ui;
 import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.service.DownloadService;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -10,10 +11,7 @@ import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -37,6 +35,7 @@ public class DownloadController implements javafx.fxml.Initializable {
     @FXML private Button closeBtn;
     @FXML private Slider threadSlider; // New UI element for thread count adjustment
     @FXML private Label threadCountLabel; // New UI element to display thread count
+    @FXML private StackPane emptyStatePane;
 
     /* -------- DI -------- */
     private final DownloadService service;
@@ -70,6 +69,11 @@ public class DownloadController implements javafx.fxml.Initializable {
             threadSlider.setMajorTickUnit(1);
             threadSlider.setMinorTickCount(0);
             threadSlider.setSnapToTicks(true);
+
+            if (emptyStatePane != null) {
+                emptyStatePane.visibleProperty().bind(Bindings.isEmpty(activeTasks));
+                emptyStatePane.managedProperty().bind(Bindings.isEmpty(activeTasks));
+            }
 
             if (threadCountLabel != null) {
                 threadCountLabel.setText(String.format("Threads: %d", service.getMaxThreads()));
