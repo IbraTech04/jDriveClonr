@@ -23,11 +23,12 @@
                     <Rectangle width="36" height="36" arcWidth="8" arcHeight="8" style="-fx-fill: #E8F0FE;"/>
                     <Text text="↓" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-fill: #1967D2;"/>
                 </StackPane>
-                <Text text="Google Drive Downloader" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-fill: #202124;">
+                <Text text="Downloading your Files..." style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-fill: #202124;">
                     <font>
                         <Font name="System Bold" size="22.0" />
                     </font>
                 </Text>
+                <Text text="This will take a while, hang tight!" style="-fx-font-size: 14px; -fx-text-fill: #5F6368;"/>
             </HBox>
 
             <VBox spacing="10.0" VBox.vgrow="NEVER">
@@ -54,18 +55,6 @@
             <padding>
                 <Insets top="20" right="24" bottom="16" left="24"/>
             </padding>
-
-            <!-- Thread Control Panel -->
-            <HBox spacing="16" alignment="CENTER_LEFT" style="-fx-background-color: #F1F8FF; -fx-background-radius: 8; -fx-border-color: #CCDEF6; -fx-border-radius: 8; -fx-border-width: 1;">
-                <padding>
-                    <Insets top="16" right="16" bottom="16" left="16"/>
-                </padding>
-
-                <Label text="Download Threads:" style="-fx-font-size: 14px; -fx-text-fill: #174EA6;"/>
-                <Slider fx:id="threadSlider" min="1" max="16" value="4" blockIncrement="1" majorTickUnit="1" minorTickCount="0" snapToTicks="true"
-                        HBox.hgrow="ALWAYS" style="-fx-control-inner-background: #CCDEF6;"/>
-                <Label fx:id="threadCountLabel" text="Threads: 4" style="-fx-font-size: 14px; -fx-text-fill: #174EA6; -fx-font-weight: bold;"/>
-            </HBox>
 
             <!-- Download List Header -->
             <HBox alignment="CENTER_LEFT" spacing="5.0">

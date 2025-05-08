@@ -20,6 +20,7 @@ module com.ibrasoft.jdriveclonr {
     requires com.google.api.client.json.jackson2;
     requires lombok;
     requires com.google.auth.oauth2;
+    requires java.net.http;
 
     // Allow FXML loader to access controllers
     opens com.ibrasoft.jdriveclonr to javafx.fxml;

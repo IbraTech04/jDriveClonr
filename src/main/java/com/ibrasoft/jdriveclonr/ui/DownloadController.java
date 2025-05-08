@@ -47,10 +47,6 @@ public class DownloadController implements javafx.fxml.Initializable {
     public DownloadController() {
         this.service = new DownloadService();
         this.service.setService(App.getDriveService());
-
-        // Set default thread count based on available processors
-        int defaultThreads = Math.max(2, Runtime.getRuntime().availableProcessors() - 1);
-        this.service.setMaxThreads(defaultThreads);
     }
 
     /* -------- init -------- */
@@ -59,34 +55,6 @@ public class DownloadController implements javafx.fxml.Initializable {
         // Set initial states
         percentLabel.setText("0%");
         threadsCountLabel.setText("0 files");
-
-        // Configure thread slider if it exists in the FXML
-        if (threadSlider != null) {
-            threadSlider.setMin(1);
-            threadSlider.setMax(Math.max(8, Runtime.getRuntime().availableProcessors() * 2));
-            threadSlider.setValue(service.getMaxThreads());
-            threadSlider.setBlockIncrement(1);
-            threadSlider.setMajorTickUnit(1);
-            threadSlider.setMinorTickCount(0);
-            threadSlider.setSnapToTicks(true);
-
-            if (emptyStatePane != null) {
-                emptyStatePane.visibleProperty().bind(Bindings.isEmpty(activeTasks));
-                emptyStatePane.managedProperty().bind(Bindings.isEmpty(activeTasks));
-            }
-
-            if (threadCountLabel != null) {
-                threadCountLabel.setText(String.format("Threads: %d", service.getMaxThreads()));
-            }
-
-            threadSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-                int threads = newVal.intValue();
-                service.setMaxThreads(threads);
-                if (threadCountLabel != null) {
-                    threadCountLabel.setText(String.format("Threads: %d", threads));
-                }
-            });
-        }
 
         // Set the list to use our observable list
         threadList.setItems(activeTasks);

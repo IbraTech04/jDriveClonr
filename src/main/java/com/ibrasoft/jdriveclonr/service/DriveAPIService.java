@@ -15,9 +15,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.util.*;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class DriveAPIService {
     private final Drive driveService;
@@ -73,7 +81,10 @@ public class DriveAPIService {
                 new DriveItem("root", "Shared With Me", "virtual/root",
                         0, null, false, new ArrayList<>(), () -> {
                             try {
-                                return convertFileToDriveItems(fetchFiles("(trashed = false) and sharedWithMe"));
+                                List<File> files = fetchFiles("(trashed = false) and sharedWithMe");
+                                return (convertFileToDriveItems(files.stream()
+                                        .filter(file -> file.getParents() == null || file.getParents().isEmpty())
+                                        .toList()));
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
@@ -163,11 +174,11 @@ public class DriveAPIService {
      * Unlike {@link #downloadFile(String, ExportFormat)}, this method does not load the file into memory
      * This method allows for pushing files into an arbitrary instance of {@link OutputStream}, allowing
      * for streaming the file to a different location.
-     * @param fileID
-     * @param mime
-     * @param target
+     * @param fileID The ID of the file to download
+     * @param mime The export format to use
+     * @param target The target output stream to write the file to
      */
-    public void downloadInto(String fileID, ExportFormat mime, OutputStream target) throws IOException {
+    public void downloadInto(String fileID, ExportFormat mime, OutputStream target) throws IOException, InterruptedException {
 
         try {
             // If the exportMIME is not null, we need to export the file. Otherwise, request the bytes directly
@@ -247,30 +258,44 @@ public class DriveAPIService {
         }
     }
 
-    public static void downloadFromExportLinkInto(String token, String link, OutputStream target) throws IOException {
-        URL url = new URL(link);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Authorization", "Bearer " + token);
+    public static void downloadFromExportLinkInto(String token,
+                                                  String link,
+                                                  OutputStream target) throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(15))
+                .build();
 
-        // Buffer size: 8KiB is a good default
-        final int BUFFER_SIZE = 8 * 1024;
+        HttpRequest request = HttpRequest.newBuilder(URI.create(link))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
 
-        try (InputStream in = conn.getInputStream())
-              {
+        HttpResponse<InputStream> response =
+                client.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int bytesRead;
+        if (response.statusCode() != 200) {
+            String err = new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
+            throw new IOException("Failed to download: HTTP " + response.statusCode() + " – " + err);
+        }
 
-            while ((bytesRead = in.read(buffer)) != -1) {
-                target.write(buffer, 0, bytesRead);
-            }
-
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new IOException("Failed to download file: HTTP " + conn.getResponseCode());
-            }
+        // Still just a stream‑to‑stream pipe
+        try (InputStream in = response.body()) {
+            in.transferTo(target);
         }
     }
 
+
+
+    /**
+     * Used to create a copy of the current running instance for Thread Safety, because the Google Drive API is *not*
+     * Thread-safe by default
+     * @return
+     * @throws GeneralSecurityException
+     * @throws IOException
+     */
+    public DriveAPIService createCopy() throws GeneralSecurityException, IOException {
+        return new DriveAPIService(this.googleCreds);
+    }
 
 }
