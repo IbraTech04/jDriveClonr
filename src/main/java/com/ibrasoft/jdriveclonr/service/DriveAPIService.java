@@ -13,6 +13,7 @@ import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.GeneralSecurityException;
@@ -159,6 +160,41 @@ public class DriveAPIService {
     }
 
     /**
+     * Unlike {@link #downloadFile(String, ExportFormat)}, this method does not load the file into memory
+     * This method allows for pushing files into an arbitrary instance of {@link OutputStream}, allowing
+     * for streaming the file to a different location.
+     * @param fileID
+     * @param mime
+     * @param target
+     */
+    public void downloadInto(String fileID, ExportFormat mime, OutputStream target) throws IOException {
+
+        try {
+            // If the exportMIME is not null, we need to export the file. Otherwise, request the bytes directly
+            if (mime != ExportFormat.DEFAULT) {
+                // Export the file
+                try {
+                    this.driveService.files().export(fileID, mime.getMimeType())
+                            .executeMediaAndDownloadTo(target);
+                }
+                catch (IOException e){
+                    // We have likely run into a scenario where the file is too big to be exported, therefore we must
+                    // Use the export links trick.
+                    String downloadLink = fetchExportLinksFromFileId(fileID, mime);
+                    downloadFromExportLinkInto(this.googleCreds.getAccessToken(), downloadLink, target);
+                }
+            } else {
+                // Download the file
+                this.driveService.files().get(fileID)
+                        .executeMediaAndDownloadTo(target);
+            }
+        } catch (GoogleJsonResponseException e) {
+            System.err.println("Unable to move file: " + e.getDetails());
+            throw e;
+        }
+    }
+
+    /**
      * Returns the export link for a given file ID and export format.
      * @param fileId the ID of the file to export
      * @param mime the export format to use
@@ -206,6 +242,31 @@ public class DriveAPIService {
             if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 return out;
             } else {
+                throw new IOException("Failed to download file: HTTP " + conn.getResponseCode());
+            }
+        }
+    }
+
+    public static void downloadFromExportLinkInto(String token, String link, OutputStream target) throws IOException {
+        URL url = new URL(link);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Bearer " + token);
+
+        // Buffer size: 8KiB is a good default
+        final int BUFFER_SIZE = 8 * 1024;
+
+        try (InputStream in = conn.getInputStream())
+              {
+
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int bytesRead;
+
+            while ((bytesRead = in.read(buffer)) != -1) {
+                target.write(buffer, 0, bytesRead);
+            }
+
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 throw new IOException("Failed to download file: HTTP " + conn.getResponseCode());
             }
         }
