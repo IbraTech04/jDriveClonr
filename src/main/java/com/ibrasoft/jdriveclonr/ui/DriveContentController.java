@@ -58,17 +58,19 @@ public class DriveContentController implements Initializable {
                 DriveItem ownedRoot   = driveService.fetchRootOwnedItems();
                 DriveItem sharedRoot  = driveService.fetchRootSharedItems();
                 DriveItem trashRoot = driveService.fetchRootTrashedItems();
+                DriveItem sharedDrivesRoot = driveService.fetchRootSharedDrives();
 
                 // 2. Build CheckBoxTreeItems (still off FX thread – ok)
                 CheckBoxTreeItem<DriveItem> ownedNode  = ownedRoot.toLazyTreeItem();
                 CheckBoxTreeItem<DriveItem> sharedNode = sharedRoot.toLazyTreeItem();
                 CheckBoxTreeItem<DriveItem> trashNode = trashRoot.toLazyTreeItem();
+                CheckBoxTreeItem<DriveItem> sharedDrivesNode = sharedDrivesRoot.toLazyTreeItem();
 
                 // Synthetic invisible root that holds both branches
                 DriveItem virtualRootValue = new DriveItem(
                         "virtual-root", "Google Drive", "virtual/root", ownedRoot.getSize() + sharedRoot.getSize(), null, false, new ArrayList<>(), null);
                 CheckBoxTreeItem<DriveItem> virtualRoot = new CheckBoxTreeItem<>(virtualRootValue);
-                virtualRoot.getChildren().addAll(ownedNode, sharedNode, trashNode);
+                virtualRoot.getChildren().addAll(ownedNode, sharedNode, trashNode, sharedDrivesNode);
                 virtualRoot.setSelected(true);
                 return virtualRoot;
             }

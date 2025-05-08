@@ -3,7 +3,6 @@ package com.ibrasoft.jdriveclonr.ui;
 import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.service.DownloadService;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -168,6 +167,24 @@ public class DownloadController implements javafx.fxml.Initializable {
         // Disable close button until download is finished
         closeBtn.setDisable(true);
 
+        // Add window close handler for cleanup
+        Platform.runLater(() -> {
+            Stage stage = (Stage) overallLabel.getScene().getWindow();
+            stage.setOnCloseRequest(event -> {
+                if (downloadTask != null && !downloadTask.isDone()) {
+                    service.cancel();
+                    downloadTask.cancel();
+                }
+                // Cancel and clear all active tasks
+                for (Task<?> task : activeTasks) {
+                    if (task != null && !task.isDone()) {
+                        task.cancel();
+                    }
+                }
+                activeTasks.clear();
+            });
+        });
+
         // Start the download process
         startDownload();
     }
@@ -254,6 +271,13 @@ public class DownloadController implements javafx.fxml.Initializable {
             closeBtn.setDisable(false);
             cancelBtn.setDisable(true);
         }
+        // Cancel and clear all active tasks
+        for (Task<?> task : activeTasks) {
+            if (task != null && !task.isDone()) {
+                task.cancel();
+            }
+        }
+        activeTasks.clear();
     }
 
     private void showError(String message) {

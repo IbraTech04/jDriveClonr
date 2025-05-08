@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -53,7 +52,11 @@ public class DownloadService {
     });
 
     public DownloadService() {
-        this.executorService = Executors.newCachedThreadPool();
+        this.executorService = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     public void downloadFile(DriveItem root, ConfigModel config, Consumer<Double> progressCallback,
@@ -216,11 +219,12 @@ public class DownloadService {
                     String folderPathKey = destinationDir.getAbsolutePath();
 
                     // Ensure we have a filename that won't conflict (double-check before writing)
-                    String finalName;
-                    synchronized (folderFileNamesMap) {
-                        finalName = resolveFilenameConflict(item, config, folderPathKey);
-                        folderFileNamesMap.get(folderPathKey).add(finalName);
-                    }
+                    String finalName = item.getName();
+//                    synchronized (folderFileNamesMap) {
+//                        finalName = resolveFilenameConflict(item, config, folderPathKey);
+//                        folderFileNamesMap.get(folderPathKey).add(finalName);
+//                    }
+
 
                     // Create the output file
                     File outFile = new File(destinationDir, finalName);

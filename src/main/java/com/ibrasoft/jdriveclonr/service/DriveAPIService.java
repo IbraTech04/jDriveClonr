@@ -42,13 +42,19 @@ public class DriveAPIService {
                 .build();
     }
 
+    /**
+     * Private wrapper around {@link Drive#files().list()} to fetch files with a specified query.
+     * @param query A Google Drive API V3 query string.
+     * @return A list of files matching the query.
+     * @throws IOException If the request fails or an I/O error occurs.
+     */
     private List<File> fetchFiles(String query) throws IOException {
         List<File> files = new ArrayList<>();
         String pageToken = null;
         do {
             FileList result = driveService.files().list()
-                    .setQ(query + " and mimeType != 'application/vnd.google-apps.form'" +
-                            "and mimeType != 'application/vnd.google-apps.shortcut' and mimeType != 'application/vnd.google-apps.drive-sdk'")
+                    .setQ(query + " and mimeType != 'application/vnd.google-apps.form'"
+                            + "and mimeType != 'application/vnd.google-apps.shortcut' and mimeType != 'application/vnd.google-apps.drive-sdk'")
                     .setFields("nextPageToken, files(id, name, mimeType, parents, modifiedTime, size, shared)")
                     .setPageToken(pageToken)
                     .setPageSize(1000)
@@ -59,6 +65,13 @@ public class DriveAPIService {
         return files;
     }
 
+    /**
+     * Returns a DriveItem tree representing the users root-owned items.
+     * This is a virtual root node that contains all the files, and which implements lazy loading for all subtrees for
+     * memory and performance benefits
+     * @return
+     * @throws IOException
+     */
     public DriveItem fetchRootOwnedItems() throws IOException {
         DriveItem virtualRoot =
                 new DriveItem("root", "My Files", "virtual/root",
@@ -76,6 +89,13 @@ public class DriveAPIService {
         return virtualRoot;
     }
 
+    /**
+     * Returns a DriveItem tree representing the users root-shared items.
+     * This is a virtual root node that contains all the files, and which implements lazy loading for all subtrees for
+     * memory and performance benefits
+     * @return
+     * @throws IOException
+     */
     public DriveItem fetchRootSharedItems() throws IOException {
         DriveItem virtualRoot =
                 new DriveItem("root", "Shared With Me", "virtual/root",
@@ -94,10 +114,83 @@ public class DriveAPIService {
         virtualRoot.setChildren(convertFileToDriveItems(files.stream()
                 .filter(file -> file.getParents() == null || file.getParents().isEmpty())
                 .toList()));
+        return virtualRoot;
+    }
+
+    /**
+     * Beta Feature: Shared Drives Cloning
+     * No Javadoc here because this is highly experimental and not yet ready for production
+     * @param driveId
+     * @return
+     * @throws IOException
+     */
+    private List<com.google.api.services.drive.model.File> fetchFilesInDrive(String driveId) throws IOException {
+        FileList fileList = driveService.files().list()
+                .setQ("'root' in parents and trashed = false")
+                .setDriveId(driveId)
+                .setCorpora("drive")
+                .setSupportsAllDrives(true)
+                .setIncludeItemsFromAllDrives(true)
+                .setFields("files(id, name, mimeType, parents, size)")
+                .execute();
+
+        return fileList.getFiles();
+    }
+
+
+    public DriveItem fetchRootSharedDrives() throws IOException {
+        // 1. List all shared drives
+        Drive.Drives.List request = driveService.drives().list()
+                .setPageSize(100)
+                .setFields("drives(id, name, createdTime)");
+
+        List<com.google.api.services.drive.model.Drive> drives = request.execute().getDrives();
+
+        // 2. Create the virtual root node
+        DriveItem virtualRoot = new DriveItem(
+                "virtual-shared-root", "Shared Drives", "virtual/root",
+                0, null, false, new ArrayList<>(), () -> {
+                    try {
+                        return convertFileToDriveItems(fetchFiles("'root' in parents and trashed = false and 'me' in owners"));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+        // 3. For each shared drive, create a DriveItem node with lazy children loader
+        for (com.google.api.services.drive.model.Drive drive : drives) {
+            DriveItem sharedDriveItem = new DriveItem(
+                    drive.getId(),
+                    drive.getName(),
+                    "shared/drive/" + drive.getId(),
+                    0,
+                    null,
+                    true, // isFolder
+                    null,
+                    () -> {
+                        try {
+                            // Important: list files in *this* shared drive
+                            return convertFileToDriveItems(
+                                    fetchFilesInDrive(drive.getId())
+                            );
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+
+            virtualRoot.getChildren().add(sharedDriveItem);
+        }
 
         return virtualRoot;
     }
 
+    /**
+     * Similar to the above methods; this method fetches the files in the trash
+     * and creates a virtual root node for them
+     * Again, all lazily-loaded :P
+     * @return
+     * @throws IOException
+     */
     public DriveItem fetchRootTrashedItems() throws IOException {
         DriveItem virtualRoot =
                 new DriveItem("root", "Trash", "virtual/root",
@@ -115,6 +208,12 @@ public class DriveAPIService {
         return virtualRoot;
     }
 
+    /**
+     * Converts a list of {@link File} objects to a list of {@link DriveItem} objects.
+     * Also sets the children of each DriveItem to a lazy-loaded list of DriveItems.
+     * @param files
+     * @return
+     */
     public List<DriveItem> convertFileToDriveItems(List<File> files) {
         List<DriveItem> driveItems = new ArrayList<>();
         for (File file : files) {
@@ -139,6 +238,7 @@ public class DriveAPIService {
         return driveItems;
     }
 
+    @Deprecated
     public ByteArrayOutputStream downloadFile(String fileID, ExportFormat mime) throws IOException {
 
         try {
@@ -231,6 +331,7 @@ public class DriveAPIService {
      * @return the downloaded file contents
      * @throws IOException if the request fails or an I/O error occurs
      */
+    @Deprecated
     public static ByteArrayOutputStream downloadFromExportLink(String token, String link) throws IOException {
         URL url = new URL(link);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
