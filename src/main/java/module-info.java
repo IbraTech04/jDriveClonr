@@ -21,6 +21,8 @@ module com.ibrasoft.jdriveclonr {
     requires lombok;
     requires com.google.auth.oauth2;
     requires java.net.http;
+    requires gax;
+    requires google.photos.library.client;
 
     // Allow FXML loader to access controllers
     opens com.ibrasoft.jdriveclonr to javafx.fxml;

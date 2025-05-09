@@ -52,11 +52,17 @@ public class DownloadService {
     });
 
     public DownloadService() {
-        this.executorService = Executors.newCachedThreadPool(r -> {
+//        this.executorService = Executors.newCachedThreadPool(r -> {
+//            Thread t = new Thread(r);
+//            t.setDaemon(true);
+//            return t;
+//        });
+        this.executorService = Executors.newFixedThreadPool(4, r -> {
             Thread t = new Thread(r);
             t.setDaemon(true);
             return t;
         });
+
     }
 
     public void downloadFile(DriveItem root, ConfigModel config, Consumer<Double> progressCallback,
@@ -232,7 +238,7 @@ public class DownloadService {
                     // Create a FileOutputStream to pass to DownloadService
                     try (FileOutputStream fos = new FileOutputStream(outFile)) {
                         serviceThreadLocal.get().downloadInto(
-                                item.getId(),
+                                item,
                                 config.getExportFormat(item.getMimeType()),
                                 fos
                         );

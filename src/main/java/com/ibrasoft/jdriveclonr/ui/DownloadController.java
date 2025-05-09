@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DownloadController implements javafx.fxml.Initializable {
 
-    /* -------- FXML -------- */
     @FXML private Label overallLabel;
     @FXML private Label percentLabel;
     @FXML private Label threadsCountLabel;
@@ -32,11 +31,7 @@ public class DownloadController implements javafx.fxml.Initializable {
     @FXML private ListView<Task<?>> threadList;
     @FXML private Button cancelBtn;
     @FXML private Button closeBtn;
-    @FXML private Slider threadSlider; // New UI element for thread count adjustment
-    @FXML private Label threadCountLabel; // New UI element to display thread count
-    @FXML private StackPane emptyStatePane;
 
-    /* -------- DI -------- */
     private final DownloadService service;
     private Task<?> downloadTask;
     private final DecimalFormat percentFormat = new DecimalFormat("0.0%");
@@ -48,7 +43,6 @@ public class DownloadController implements javafx.fxml.Initializable {
         this.service.setService(App.getDriveService());
     }
 
-    /* -------- init -------- */
     @Override
     public void initialize(URL u, ResourceBundle rb) {
         // Set initial states

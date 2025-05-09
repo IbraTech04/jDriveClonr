@@ -42,26 +42,38 @@ public class DriveAPIService {
                 .build();
     }
 
+    private List<File> fetchFiles(String query) throws IOException {
+        return fetchFiles(query, false);
+    }
+
     /**
      * Private wrapper around {@link Drive#files().list()} to fetch files with a specified query.
+     *
      * @param query A Google Drive API V3 query string.
      * @return A list of files matching the query.
      * @throws IOException If the request fails or an I/O error occurs.
      */
-    private List<File> fetchFiles(String query) throws IOException {
+    private List<File> fetchFiles(String query, boolean shared) throws IOException {
         List<File> files = new ArrayList<>();
         String pageToken = null;
         do {
             FileList result = driveService.files().list()
                     .setQ(query + " and mimeType != 'application/vnd.google-apps.form'"
                             + "and mimeType != 'application/vnd.google-apps.shortcut' and mimeType != 'application/vnd.google-apps.drive-sdk'")
-                    .setFields("nextPageToken, files(id, name, mimeType, parents, modifiedTime, size, shared)")
+                    .setFields("nextPageToken, files(id, name, mimeType, parents, modifiedTime, size, shared, webContentLink)")
                     .setPageToken(pageToken)
                     .setPageSize(1000)
+                    .setSupportsAllDrives(true)
                     .execute();
             files.addAll(result.getFiles());
             pageToken = result.getNextPageToken();
         } while (pageToken != null);
+        // go through the files, make sure there exists a sharable link for each file that only people with access can see
+        if (shared) {
+            for (File file : files) {
+                String ignore = file.getWebViewLink();
+            }
+        }
         return files;
     }
 
@@ -69,6 +81,7 @@ public class DriveAPIService {
      * Returns a DriveItem tree representing the users root-owned items.
      * This is a virtual root node that contains all the files, and which implements lazy loading for all subtrees for
      * memory and performance benefits
+     *
      * @return
      * @throws IOException
      */
@@ -76,12 +89,12 @@ public class DriveAPIService {
         DriveItem virtualRoot =
                 new DriveItem("root", "My Files", "virtual/root",
                         0, null, false, new ArrayList<>(), () -> {
-                            try {
-                                return convertFileToDriveItems(fetchFiles("'root' in parents and trashed = false and 'me' in owners"));
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+                    try {
+                        return convertFileToDriveItems(fetchFiles("'root' in parents and trashed = false and 'me' in owners"));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, null);
 
         List<File> files = fetchFiles("'root' in parents and trashed = false and 'me' in owners");
         virtualRoot.setChildren(convertFileToDriveItems(files));
@@ -93,6 +106,7 @@ public class DriveAPIService {
      * Returns a DriveItem tree representing the users root-shared items.
      * This is a virtual root node that contains all the files, and which implements lazy loading for all subtrees for
      * memory and performance benefits
+     *
      * @return
      * @throws IOException
      */
@@ -100,15 +114,15 @@ public class DriveAPIService {
         DriveItem virtualRoot =
                 new DriveItem("root", "Shared With Me", "virtual/root",
                         0, null, false, new ArrayList<>(), () -> {
-                            try {
-                                List<File> files = fetchFiles("(trashed = false) and sharedWithMe");
-                                return (convertFileToDriveItems(files.stream()
-                                        .filter(file -> file.getParents() == null || file.getParents().isEmpty())
-                                        .toList()));
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+                    try {
+                        List<File> files = fetchFiles("(trashed = false) and sharedWithMe");
+                        return (convertFileToDriveItems(files.stream()
+                                .filter(file -> file.getParents() == null || file.getParents().isEmpty())
+                                .toList()));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, null);
 
         List<File> files = fetchFiles("(trashed = false) and sharedWithMe");
         virtualRoot.setChildren(convertFileToDriveItems(files.stream()
@@ -120,6 +134,7 @@ public class DriveAPIService {
     /**
      * Beta Feature: Shared Drives Cloning
      * No Javadoc here because this is highly experimental and not yet ready for production
+     *
      * @param driveId
      * @return
      * @throws IOException
@@ -150,12 +165,12 @@ public class DriveAPIService {
         DriveItem virtualRoot = new DriveItem(
                 "virtual-shared-root", "Shared Drives", "virtual/root",
                 0, null, false, new ArrayList<>(), () -> {
-                    try {
-                        return convertFileToDriveItems(fetchFiles("'root' in parents and trashed = false and 'me' in owners"));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+            try {
+                return convertFileToDriveItems(fetchFiles("'root' in parents and trashed = false and 'me' in owners"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }, null);
 
         // 3. For each shared drive, create a DriveItem node with lazy children loader
         for (com.google.api.services.drive.model.Drive drive : drives) {
@@ -176,7 +191,7 @@ public class DriveAPIService {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                    });
+                    }, null);
 
             virtualRoot.getChildren().add(sharedDriveItem);
         }
@@ -188,6 +203,7 @@ public class DriveAPIService {
      * Similar to the above methods; this method fetches the files in the trash
      * and creates a virtual root node for them
      * Again, all lazily-loaded :P
+     *
      * @return
      * @throws IOException
      */
@@ -195,12 +211,12 @@ public class DriveAPIService {
         DriveItem virtualRoot =
                 new DriveItem("root", "Trash", "virtual/root",
                         0, null, false, new ArrayList<>(), () -> {
-                            try {
-                                return convertFileToDriveItems(fetchFiles("'root' in parents and trashed = true"));
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+                    try {
+                        return convertFileToDriveItems(fetchFiles("'root' in parents and trashed = true"));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, null);
 
         List<File> files = fetchFiles("'root' in parents and trashed = true");
         virtualRoot.setChildren(convertFileToDriveItems(files));
@@ -211,6 +227,7 @@ public class DriveAPIService {
     /**
      * Converts a list of {@link File} objects to a list of {@link DriveItem} objects.
      * Also sets the children of each DriveItem to a lazy-loaded list of DriveItems.
+     *
      * @param files
      * @return
      */
@@ -231,7 +248,9 @@ public class DriveAPIService {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                    }
+                    },
+                    file.getWebContentLink() == null ? null : file.getWebContentLink()
+
             );
             driveItems.add(driveItem);
         }
@@ -250,8 +269,7 @@ public class DriveAPIService {
                 try {
                     this.driveService.files().export(fileID, mime.getMimeType())
                             .executeMediaAndDownloadTo(outputStream);
-                }
-                catch (IOException e){
+                } catch (IOException e) {
                     // We have likely run into a scenario where the file is too big to be exported, therefore we must
                     // Use the export links trick.
                     String downloadLink = fetchExportLinksFromFileId(fileID, mime);
@@ -274,21 +292,28 @@ public class DriveAPIService {
      * Unlike {@link #downloadFile(String, ExportFormat)}, this method does not load the file into memory
      * This method allows for pushing files into an arbitrary instance of {@link OutputStream}, allowing
      * for streaming the file to a different location.
-     * @param fileID The ID of the file to download
-     * @param mime The export format to use
+     *
+     * @param d The DriveItem to download
+     * @param mime   The export format to use
      * @param target The target output stream to write the file to
      */
-    public void downloadInto(String fileID, ExportFormat mime, OutputStream target) throws IOException, InterruptedException {
+    public void downloadInto(DriveItem d, ExportFormat mime, OutputStream target) throws IOException, InterruptedException {
+        String fileID = d.getId();
 
         try {
+            // Get the file, and create an export link visible to only those with access to the file
+//            File file = this.driveService.files().get(fileID)
+//                    .setFields("exportLinks")
+//                    .execute();
+//            Map<String, String> exportLinks = file.getExportLinks();
+
             // If the exportMIME is not null, we need to export the file. Otherwise, request the bytes directly
             if (mime != ExportFormat.DEFAULT) {
                 // Export the file
                 try {
                     this.driveService.files().export(fileID, mime.getMimeType())
                             .executeMediaAndDownloadTo(target);
-                }
-                catch (IOException e){
+                } catch (IOException e) {
                     // We have likely run into a scenario where the file is too big to be exported, therefore we must
                     // Use the export links trick.
                     String downloadLink = fetchExportLinksFromFileId(fileID, mime);
@@ -296,8 +321,19 @@ public class DriveAPIService {
                 }
             } else {
                 // Download the file
-                this.driveService.files().get(fileID)
-                        .executeMediaAndDownloadTo(target);
+                try {
+                    this.driveService.files().get(fileID)
+                            .setSupportsAllDrives(true)
+                            .executeMediaAndDownloadTo(target);
+                } catch (com.google.api.client.http.HttpResponseException e) {
+                    // Get the binary URL from the file
+                    String downloadLink = d.getBinaryURL();
+                    if (downloadLink != null) {
+                        downloadFromExportLinkInto(this.googleCreds.getAccessToken(), downloadLink, target);
+                    } else {
+                        throw new IOException("Unable to download file: " + e.getMessage());
+                    }
+                }
             }
         } catch (GoogleJsonResponseException e) {
             System.err.println("Unable to move file: " + e.getDetails());
@@ -307,8 +343,9 @@ public class DriveAPIService {
 
     /**
      * Returns the export link for a given file ID and export format.
+     *
      * @param fileId the ID of the file to export
-     * @param mime the export format to use
+     * @param mime   the export format to use
      * @return the export link for the file
      * @throws IOException if the request fails or an I/O error occurs
      */
@@ -387,10 +424,10 @@ public class DriveAPIService {
     }
 
 
-
     /**
      * Used to create a copy of the current running instance for Thread Safety, because the Google Drive API is *not*
      * Thread-safe by default
+     *
      * @return
      * @throws GeneralSecurityException
      * @throws IOException

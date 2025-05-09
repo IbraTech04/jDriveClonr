@@ -68,7 +68,7 @@ public class DriveContentController implements Initializable {
 
                 // Synthetic invisible root that holds both branches
                 DriveItem virtualRootValue = new DriveItem(
-                        "virtual-root", "Google Drive", "virtual/root", ownedRoot.getSize() + sharedRoot.getSize(), null, false, new ArrayList<>(), null);
+                        "virtual-root", "Google Drive", "virtual/root", ownedRoot.getSize() + sharedRoot.getSize(), null, false, new ArrayList<>(), null, null);
                 CheckBoxTreeItem<DriveItem> virtualRoot = new CheckBoxTreeItem<>(virtualRootValue);
                 virtualRoot.getChildren().addAll(ownedNode, sharedNode, trashNode, sharedDrivesNode);
                 virtualRoot.setSelected(true);
@@ -136,7 +136,8 @@ public class DriveContentController implements Initializable {
                 original.getModifiedTime(),
                 original.isShared(),
                 new ArrayList<>(),
-                original.getNext()
+                original.getNext(),
+                original.getBinaryURL()
         );
 
         for (TreeItem<DriveItem> child : item.getChildren()) {

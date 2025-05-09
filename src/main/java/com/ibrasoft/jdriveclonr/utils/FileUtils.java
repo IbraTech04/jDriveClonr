@@ -66,20 +66,6 @@ public class FileUtils {
     }
 
     /**
-     * Returns the appropriate file extension based on the MIME type.
-     * @param mimeType The MIME type of the file.
-     * @return The file extension associated with the MIME type, or an empty string if not found.
-     */
-    public static String getExtension(String mimeType) {
-        for (ExportFormat format : ExportFormat.values()) {
-            if (format.getMimeType().equalsIgnoreCase(mimeType)) {
-                return format.getExtension();
-            }
-        }
-        return "";
-    }
-
-    /**
      * Checks if the current windows installation has long path support enabled.
      * @return true if long path support is enabled (or this is a non-nt OS), false otherwise.
      */

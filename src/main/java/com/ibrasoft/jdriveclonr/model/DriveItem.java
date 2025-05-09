@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javafx.scene.control.TreeItem;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -26,6 +27,7 @@ public class DriveItem {
     private boolean shared;
     private List<DriveItem> children;
     private Supplier<List<DriveItem>> next;
+    private String binaryURL = null;
 
     public void setChildren(List<DriveItem> children) {
         // sort children based on type and name
@@ -67,7 +69,7 @@ public class DriveItem {
 
         if (this.isFolder()) {
             // Add a real "Loading..." item to show while fetching
-            DriveItem loadingItem = new DriveItem("loading", "Loading...", "", 0, null, false, List.of(), null);
+            DriveItem loadingItem = new DriveItem("loading", "Loading...", "", 0, null, false, List.of(), null, null);
             CheckBoxTreeItem<DriveItem> loadingNode = new CheckBoxTreeItem<>(loadingItem);
             treeItem.getChildren().add(loadingNode);
 
@@ -94,7 +96,7 @@ public class DriveItem {
                     return item.getChildren();
                 if (item.getNext() != null)
                     return item.getNext().get();
-                return List.of(new DriveItem("empty", "No items", "", 0, null, false, List.of(), null));
+                return List.of(new DriveItem("empty", "No items", "", 0, null, false, List.of(), null, null));
             }
         };
 
@@ -104,7 +106,7 @@ public class DriveItem {
             parent.getChildren().clear();
 
             if (children.isEmpty()) {
-                DriveItem emptyItem = new DriveItem("empty", "No items", "", 0, null, false, List.of(), null);
+                DriveItem emptyItem = new DriveItem("empty", "No items", "", 0, null, false, List.of(), null, null);
                 parent.getChildren().add(new CheckBoxTreeItem<>(emptyItem));
                 return;
             }
@@ -126,7 +128,7 @@ public class DriveItem {
         loadTask.setOnFailed(evt -> {
             // Optionally show error
             parent.getChildren().clear();
-            DriveItem errorItem = new DriveItem("error", "Failed to load", "", 0, null, false, List.of(), null);
+            DriveItem errorItem = new DriveItem("error", "Failed to load", "", 0, null, false, List.of(), null, null);
             parent.getChildren().add(new CheckBoxTreeItem<>(errorItem));
         });
 
