@@ -1,44 +1,160 @@
 /* Custom styling for alerts */
 .error-dialog {
+    background-color: white;
     -fx-background-color: white;
 }
 
 .error-dialog > *.header-panel {
+    background-color: #fce8e6;
     -fx-background-color: #fce8e6;
 }
 
 .error-dialog > *.header-panel *.label {
+    font-size: 16px;
     -fx-font-size: 16px;
+    font-weight: bold;
     -fx-font-weight: bold;
     -fx-text-fill: #d93025;
 }
 
 .error-dialog > *.content.label {
+    font-size: 14px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #202124;
+    padding: 16px 0 0 0;
+    -fx-padding: 16px 0 0 0;
+}
+
+.error-dialog:header .graphic-container {
+    padding: 0;
+    -fx-padding: 0;
+}
+
+.error-dialog .button-bar .container {
+    padding: 16px 0;
+    -fx-padding: 16px 0;
+}
+
+.error-dialog .button-bar .button {
+    background-color: #1a73e8;
+    -fx-background-color: #1a73e8;
+    -fx-text-fill: white;
+    font-size: 14px;
+    -fx-font-size: 14px;
+    padding: 8px 16px;
+    -fx-padding: 8 16;
+    -fx-background-radius: 4;
+}
+
+.error-dialog .button-bar .button:hover {
+    background-color: #1765cc;
+    -fx-background-color: #1765cc;
+}
+
+.error-dialog .button-bar .button:pressed {
+    background-color: #185abc;
+    -fx-background-color: #185abc;
+}
+
+/* Success Dialog Styling */
+.success-dialog {
+    background-color: white;
+    -fx-background-color: white;
+}
+
+.success-dialog > *.header-panel {
+    background-color: #e6f4ea;
+    -fx-background-color: #e6f4ea;
+}
+
+.success-dialog > *.header-panel *.label {
+    font-size: 16px;
+    -fx-font-size: 16px;
+    font-weight: bold;
+    -fx-font-weight: bold;
+    -fx-text-fill: #137333;
+}
+
+.success-dialog > *.content.label {
+    font-size: 14px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #202124;
+    padding: 16px 0 0 0;
+    -fx-padding: 16px 0 0 0;
+}
+
+.success-dialog:header .graphic-container {
+    padding: 0;
+    -fx-padding: 0;
+}
+
+.success-dialog .button-bar .container {
+    padding: 16px 0;
+    -fx-padding: 16px 0;
+}
+
+.success-dialog .button-bar .button {
+    background-color: #1967D2;
+    -fx-background-color: #1967D2;
+    -fx-text-fill: white;
+    font-size: 14px;
+    -fx-font-size: 14px;
+    padding: 8px 16px;
+    -fx-padding: 8 16;
+    -fx-background-radius: 4;
+}
+
+.success-dialog .button-bar .button:hover {
+    background-color: #1557B0;
+    -fx-background-color: #1557B0;
+}
+
+.success-dialog .button-bar .button:pressed {
+    background-color: #1446A0;
+    -fx-background-color: #1446A0;
+}
+
+/* Success Dialog Styling */
+.success-dialog {
+    -fx-background-color: white;
+}
+
+.success-dialog > *.header-panel {
+    -fx-background-color: #e6f4ea;
+}
+
+.success-dialog > *.header-panel *.label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #137333;
+}
+
+.success-dialog > *.content.label {
     -fx-font-size: 14px;
     -fx-text-fill: #202124;
     -fx-padding: 16px 0 0 0;
 }
 
-.error-dialog:header .graphic-container {
+.success-dialog:header .graphic-container {
     -fx-padding: 0;
 }
 
-.error-dialog .button-bar .container {
+.success-dialog .button-bar .container {
     -fx-padding: 16px 0;
 }
 
-.error-dialog .button-bar .button {
-    -fx-background-color: #1a73e8;
+.success-dialog .button-bar .button {
+    -fx-background-color: #1967D2;
     -fx-text-fill: white;
     -fx-font-size: 14px;
     -fx-padding: 8 16;
     -fx-background-radius: 4;
 }
 
-.error-dialog .button-bar .button:hover {
-    -fx-background-color: #1765cc;
+.success-dialog .button-bar .button:hover {
+    -fx-background-color: #1557B0;
 }
 
-.error-dialog .button-bar .button:pressed {
-    -fx-background-color: #185abc;
+.success-dialog .button-bar .button:pressed {
+    -fx-background-color: #1446A0;
 }

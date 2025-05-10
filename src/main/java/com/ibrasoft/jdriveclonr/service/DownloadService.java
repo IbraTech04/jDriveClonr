@@ -5,6 +5,7 @@ import com.ibrasoft.jdriveclonr.model.ConfigModel;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.utils.FileUtils;
+import com.ibrasoft.jdriveclonr.utils.ProgressTrackingOutputStream;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import lombok.Data;
@@ -34,7 +35,7 @@ public class DownloadService {
     private Consumer<Task<?>> newTaskCallback;
     private volatile boolean isCancelled = false;
     private final AtomicLong bytesProcessed = new AtomicLong(0);
-    private long totalBytes = 0;
+    private final AtomicLong totalBytes = new AtomicLong(0);
 
     // Thread pool for parallel downloads
     private ExecutorService executorService;
@@ -52,11 +53,6 @@ public class DownloadService {
     });
 
     public DownloadService() {
-//        this.executorService = Executors.newCachedThreadPool(r -> {
-//            Thread t = new Thread(r);
-//            t.setDaemon(true);
-//            return t;
-//        });
         this.executorService = Executors.newFixedThreadPool(4, r -> {
             Thread t = new Thread(r);
             t.setDaemon(true);
@@ -74,9 +70,12 @@ public class DownloadService {
         this.bytesProcessed.set(0);
         this.runningTasks.clear();
         this.folderFileNamesMap.clear();
+        this.totalBytes.set(0);
 
         // Calculate total bytes first
-        calculateTotalBytes(root);
+        updateMessage("Calculating total size...");
+        calculateTotalBytesRecursive(root);
+        updateProgress(0);
 
         String dateTime = String.format("%1$tY-%1$tm-%1$td %1$tH-%1$tM-%1$tS", System.currentTimeMillis());
         File accDest = new File(config.getDestinationDirectory().toFile(), "DriveClonr - " + dateTime);
@@ -120,12 +119,15 @@ public class DownloadService {
         }
     }
 
-    private void calculateTotalBytes(DriveItem item) {
+    private void calculateTotalBytesRecursive(DriveItem item) {
+        if (isCancelled) return;
         if (!item.isFolder()) {
-            totalBytes += item.getSize();
+            this.totalBytes.addAndGet(item.getSize());
         }
-        for (DriveItem child : item.getChildren()) {
-            calculateTotalBytes(child);
+        if (item.isLoaded() && item.getChildren() != null) {
+            for (DriveItem child : item.getChildren()) {
+                calculateTotalBytesRecursive(child);
+            }
         }
     }
 
@@ -150,7 +152,7 @@ public class DownloadService {
 
         // If this is a folder, create that folder's directory and recurse on all the children
         if (d.isFolder()) {
-            updateMessage("Creating folder: " + d.getName());
+            updateMessage("Processing folder: " + d.getName());
             String folderName = FileUtils.sanitizeFilename(d.getName());
             File folder = new File(currPath, folderName);
             if (!folder.exists()) {
@@ -164,8 +166,18 @@ public class DownloadService {
             folderFileNamesMap.putIfAbsent(folderPathKey, ConcurrentHashMap.newKeySet());
 
             if (!d.isLoaded()) {
-                d.clearChildren();
-                d.setChildren(d.getNext().get());
+                updateMessage("Fetching contents of folder: " + d.getName());
+                List<DriveItem> children = d.getNext().get();
+                d.setChildren(children);
+
+                long discoveredBytesFromThisFolder = 0;
+                for (DriveItem child : children) {
+                    discoveredBytesFromThisFolder += getRecursiveSize(child);
+                }
+                if (discoveredBytesFromThisFolder > 0) {
+                    this.totalBytes.addAndGet(discoveredBytesFromThisFolder);
+                    updateProgress(0);
+                }
             }
 
             // Pre-process all child names before submission
@@ -178,6 +190,24 @@ public class DownloadService {
             // For files, create and submit download tasks to the thread pool
             submitDownloadTask(d, currPath, config);
         }
+    }
+
+    /**
+     * Helper method to recursively calculate size of an item and its children.
+     * Used when a folder's contents are newly discovered.
+     */
+    private long getRecursiveSize(DriveItem item) {
+        if (isCancelled) return 0;
+        long size = 0;
+        if (!item.isFolder()) {
+            size += item.getSize();
+        }
+        if (item.isFolder() && item.isLoaded() && item.getChildren() != null) {
+            for (DriveItem child : item.getChildren()) {
+                size += getRecursiveSize(child);
+            }
+        }
+        return size;
     }
 
     /**
@@ -220,50 +250,40 @@ public class DownloadService {
             protected Void call() throws Exception {
                 updateMessage("Downloading: " + item.getName());
 
+                long fileSize = item.getSize();
+                AtomicLong fileBytesProcessed = new AtomicLong(0);
+
                 try {
-                    // Get the path key for this destination directory
-                    String folderPathKey = destinationDir.getAbsolutePath();
-
-                    // Ensure we have a filename that won't conflict (double-check before writing)
                     String finalName = item.getName();
-//                    synchronized (folderFileNamesMap) {
-//                        finalName = resolveFilenameConflict(item, config, folderPathKey);
-//                        folderFileNamesMap.get(folderPathKey).add(finalName);
-//                    }
-
-
-                    // Create the output file
                     File outFile = new File(destinationDir, finalName);
 
-                    // Create a FileOutputStream to pass to DownloadService
-                    try (FileOutputStream fos = new FileOutputStream(outFile)) {
+                    try (OutputStream fos = new FileOutputStream(outFile);
+                         ProgressTrackingOutputStream ptos = new ProgressTrackingOutputStream(fos, bytesIncrement -> {
+                             // update global progress
+                             updateProgressByIncrement(bytesIncrement);
+                             // update per-file progress on this Task
+                             long processed = fileBytesProcessed.addAndGet(bytesIncrement);
+                             updateProgress(processed, fileSize); // Task.updateProgress
+                         })) {
                         serviceThreadLocal.get().downloadInto(
                                 item,
                                 config.getExportFormat(item.getMimeType()),
-                                fos
+                                ptos
                         );
-
-                        // Set the last modified time
                         setLastModifiedFromDateTime(outFile, item.getModifiedTime());
                     }
-
-                    updateProgress(item.getSize(), item.getSize());
+                    updateMessage("Completed: " + item.getName());
                 } catch (Exception e) {
                     if (!isCancelled) {
+                        updateMessage("Error downloading " + item.getName() + ": " + e.getMessage());
                         throw e;
+                    } else {
+                        updateMessage("Cancelled download of: " + item.getName());
                     }
                 }
                 return null;
             }
         };
-
-        // Add progress and message listeners
-        downloadTask.progressProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && newVal.doubleValue() == 1.0) {
-                // Update the global progress tracker when the file is complete
-                updateProgress(item.getSize());
-            }
-        });
 
         // Notify UI of new task
         if (newTaskCallback != null) {
@@ -331,14 +351,39 @@ public class DownloadService {
     }
 
     /**
+     * Updates the progress of the download by a specific increment of bytes.
+     * Called by ProgressTrackingOutputStream.
+     * @param bytesIncrement The number of bytes processed in the last write operation.
+     */
+    private synchronized void updateProgressByIncrement(long bytesIncrement) {
+        if (isCancelled) return;
+        long currentProcessed = bytesProcessed.addAndGet(bytesIncrement);
+        long currentTotalBytes = totalBytes.get();
+
+        if (progressCallback != null && currentTotalBytes > 0) {
+            double progress = Math.min(1.0, (double) currentProcessed / currentTotalBytes);
+            Platform.runLater(() -> progressCallback.accept(progress));
+        } else if (progressCallback != null && currentTotalBytes == 0 && currentProcessed > 0) {
+            Platform.runLater(() -> progressCallback.accept(1.0));
+        } else if (progressCallback != null) {
+            Platform.runLater(() -> progressCallback.accept(0.0));
+        }
+    }
+
+    /**
      * Updates the progress of the download.
-     * @param bytes The number of bytes processed.
+     * This method is kept for potential future use or for signalling completion of a phase,
+     * but primary progress is now through updateProgressByIncrement.
+     * @param bytes The number of bytes processed (e.g. size of a completed file).
      */
     private void updateProgress(long bytes) {
-        long processed = bytesProcessed.addAndGet(bytes);
-        if (progressCallback != null && totalBytes > 0) {
-            double progress = (double) processed / totalBytes;
+        if (isCancelled) return;
+        long currentTotalBytes = totalBytes.get();
+        if (progressCallback != null && currentTotalBytes > 0) {
+            double progress = Math.min(1.0, (double) bytesProcessed.get() / currentTotalBytes);
             Platform.runLater(() -> progressCallback.accept(progress));
+        } else if (progressCallback != null) {
+            Platform.runLater(() -> progressCallback.accept(0.0));
         }
     }
 
@@ -357,6 +402,7 @@ public class DownloadService {
      */
     public void cancel() {
         this.isCancelled = true;
+        updateMessage("Cancelling download...");
 
         // Cancel all running tasks
         for (Future<?> task : runningTasks) {
@@ -365,5 +411,6 @@ public class DownloadService {
 
         // Shutdown the thread pool
         shutdownThreadPool();
+        updateMessage("Download cancelled.");
     }
 }

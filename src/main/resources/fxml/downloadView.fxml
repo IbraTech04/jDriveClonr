@@ -11,45 +11,54 @@
             prefWidth="700" prefHeight="550"
             style="-fx-background-color: #F9FAFB;">
 
-    <!-- ─────────── TOP (Header) ─────────── -->
+        <!-- Top: Header Section -->
     <top>
-        <VBox spacing="5.0" BorderPane.alignment="CENTER" style="-fx-background-color: #FFFFFF; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);">
+        <VBox spacing="5.0" BorderPane.alignment="CENTER" 
+              style="-fx-background-color: #FFFFFF; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);">
             <padding>
                 <Insets top="24" right="24" bottom="24" left="24"/>
             </padding>
 
+            <!-- Header Title Section -->
             <HBox alignment="CENTER_LEFT" spacing="12">
                 <StackPane>
-                    <Rectangle width="36" height="36" arcWidth="8" arcHeight="8" style="-fx-fill: #E8F0FE;"/>
-                    <Text text="↓" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-fill: #1967D2;"/>
+                    <Rectangle width="40" height="40" arcWidth="8" arcHeight="8" 
+                              style="-fx-fill: #E8F0FE;"/>
+                    <Text text="↓" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1967D2;"/>
                 </StackPane>
-                <Text text="Downloading your Files..." style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-fill: #202124;">
-                    <font>
-                        <Font name="System Bold" size="22.0" />
-                    </font>
-                </Text>
-                <Text text="This will take a while, hang tight!" style="-fx-font-size: 14px; -fx-text-fill: #5F6368;"/>
+                <VBox spacing="4">
+                    <Text text="Downloading your Files..." 
+                          style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-fill: #202124;">
+                        <font>
+                            <Font name="System Bold" size="22.0" />
+                        </font>
+                    </Text>
+                    <Text text="This will take a while, hang tight!" 
+                          style="-fx-font-size: 14px; -fx-fill: #5F6368;"/>
+                </VBox>
             </HBox>
 
+            <!-- Overall Progress Section -->
             <VBox spacing="10.0" VBox.vgrow="NEVER">
                 <padding>
                     <Insets top="20"/>
                 </padding>
 
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
-                    <Label fx:id="overallLabel" text="Preparing downloads…" style="-fx-font-size: 14px; -fx-text-fill: #5F6368;"/>
+                    <Label fx:id="overallLabel" text="Preparing downloads…" 
+                           style="-fx-font-size: 14px; -fx-text-fill: #5F6368;"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="percentLabel" text="0%" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1967D2;"/>
+                    <Label fx:id="percentLabel" text="0%" 
+                           style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1967D2;"/>
                 </HBox>
 
                 <StackPane>
-                    <ProgressBar fx:id="overallBar" prefWidth="640" prefHeight="6" style="-fx-accent: #1967D2; -fx-control-inner-background: #E8EAED;"/>
+                    <ProgressBar fx:id="overallBar" prefWidth="640" prefHeight="6" 
+                                style="-fx-accent: #1967D2; -fx-background-color: #E8EAED;"/>
                 </StackPane>
             </VBox>
         </VBox>
-    </top>
-
-    <!-- ─────────── CENTER (Downloads + Thread Controls) ─────────── -->
+    </top>    <!-- Center: Downloads List Section -->
     <center>
         <VBox spacing="16" BorderPane.alignment="CENTER">
             <padding>
@@ -57,44 +66,58 @@
             </padding>
 
             <!-- Download List Header -->
-            <HBox alignment="CENTER_LEFT" spacing="5.0">
+            <HBox alignment="CENTER_LEFT" spacing="8">
                 <StackPane>
-                    <Rectangle width="20" height="20" arcWidth="4" arcHeight="4" style="-fx-fill: #E8F0FE;"/>
-                    <Text text="▼" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-fill: #1967D2;"/>
+                    <Rectangle width="24" height="24" arcWidth="4" arcHeight="4" 
+                              style="-fx-fill: #E8F0FE;"/>
+                    <Text text="▼" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-fill: #1967D2;"/>
                 </StackPane>
-                <Text text="Active Downloads" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #202124;"/>
+                <Text text="Active Downloads" 
+                      style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #202124;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="threadsCountLabel" text="0 files" style="-fx-font-size: 14px; -fx-text-fill: #5F6368;"/>
+                <Label fx:id="threadsCountLabel" text="0 files" 
+                       style="-fx-font-size: 14px; -fx-text-fill: #5F6368;"/>
             </HBox>
 
-            <!-- Download List -->
-            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #E8EAED; -fx-border-radius: 10; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);" VBox.vgrow="ALWAYS">
+            <!-- Download List Container -->
+            <StackPane VBox.vgrow="ALWAYS" 
+                      style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #E8EAED; -fx-border-radius: 10; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);">
+                
+                <!-- Active Downloads List -->
                 <ListView fx:id="threadList" VBox.vgrow="ALWAYS"
-                          style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 8; -fx-background-radius: 10; -fx-border-radius: 10;"/>
+                         style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 8; -fx-background-radius: 10; -fx-border-radius: 10;"/>
 
-                <!-- Empty state message -->
-                <StackPane fx:id="emptyStatePane" VBox.vgrow="ALWAYS">
-                    <Label text="No active downloads" style="-fx-font-size: 14; -fx-text-fill: #80868B; -fx-font-style: italic;"/>
+                <!-- Empty State -->
+                <StackPane fx:id="emptyStatePane" visible="false">
+                    <VBox alignment="CENTER" spacing="12">
+                        <StackPane>
+                            <Rectangle width="64" height="64" arcWidth="16" arcHeight="16" 
+                                      style="-fx-fill: #F8F9FA;"/>
+                            <Text text="↓" style="-fx-font-size: 24px; -fx-fill: #80868B;"/>
+                        </StackPane>
+                        <Label text="No active downloads" 
+                               style="-fx-font-size: 14px; -fx-text-fill: #80868B;"/>
+                    </VBox>
                 </StackPane>
-            </VBox>
+            </StackPane>
         </VBox>
-    </center>
-
-    <!-- ─────────── BOTTOM (Action Buttons) ─────────── -->
+    </center>    <!-- Bottom: Action Buttons -->
     <bottom>
-        <HBox spacing="12.0" alignment="CENTER_RIGHT" style="-fx-background-color: #FFFFFF; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, -2); -fx-border-color: #E8EAED; -fx-border-width: 1 0 0 0;">
+        <HBox spacing="12.0" alignment="CENTER_RIGHT" 
+              style="-fx-background-color: #FFFFFF; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, -2); -fx-border-color: #E8EAED; -fx-border-width: 1 0 0 0;">
             <padding>
                 <Insets top="16" right="24" bottom="16" left="24"/>
             </padding>
 
             <HBox spacing="8" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                <Label text="Download Service v1.0" style="-fx-font-size: 12px; -fx-text-fill: #80868B;"/>
+                <Label text="Download Service v1.0" 
+                       style="-fx-font-size: 12px; -fx-text-fill: #80868B;"/>
             </HBox>
 
-            <Button fx:id="cancelBtn" text="Cancel Download"
-                    style="-fx-background-color: #F1F3F4; -fx-text-fill: #5F6368; -fx-font-size: 13px; -fx-padding: 10 16; -fx-background-radius: 6; -fx-border-color: #DADCE0; -fx-border-radius: 6; -fx-border-width: 1; -fx-cursor: hand;"/>
+            <Button fx:id="cancelBtn" text="Cancel Download" onAction="#cancelDownload"
+                    style="-fx-background-color: #F1F3F4; -fx-text-fill: #5F6368; -fx-font-size: 13px; -fx-padding: 10 16; -fx-background-radius: 6; -fx-cursor: hand;"/>
 
-            <Button fx:id="closeBtn" text="Close" disable="true"
+            <Button fx:id="closeBtn" text="Close" onAction="#closeWindow"
                     style="-fx-background-color: #1967D2; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 10 16; -fx-background-radius: 6; -fx-font-weight: bold; -fx-cursor: hand;"/>
         </HBox>
     </bottom>
