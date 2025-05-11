@@ -29,8 +29,9 @@ public class ConfigController implements Initializable {
     @FXML private ComboBox<ExportFormat> jamboardFormatBox;
     @FXML private Button browseButton;
     @FXML private Button helpButton;
-
-    @Override
+    @FXML private Slider threadCountSlider;
+    @FXML private Label threadCountLabel;
+    @FXML private Label threadWarningLabel;    @Override
     public void initialize(URL location, ResourceBundle resources) {
         ConfigModel config = App.getConfigModel();
 
@@ -47,6 +48,18 @@ public class ConfigController implements Initializable {
         slidesFormatBox.setValue(config.getExportFormat(GoogleMime.SLIDES));
         drawingsFormatBox.setValue(config.getExportFormat(GoogleMime.DRAWINGS));
         jamboardFormatBox.setValue(config.getExportFormat(GoogleMime.JAMBOARD));
+        
+        // Setup thread count slider
+        threadCountSlider.setValue(config.getThreadCount());
+        updateThreadCountLabel(config.getThreadCount());
+        
+        threadCountSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            int threadCount = newVal.intValue();
+            updateThreadCountLabel(threadCount);
+            
+            // Show warning if threads > 5
+            threadWarningLabel.setVisible(threadCount > 5);
+        });
 
         // Button bindings
         browseButton.setOnAction(e -> handleBrowseButton());
@@ -63,6 +76,14 @@ public class ConfigController implements Initializable {
         setupComboDisplay(slidesFormatBox);
         setupComboDisplay(drawingsFormatBox);
         setupComboDisplay(jamboardFormatBox);
+    }
+    
+    /**
+     * Updates the thread count label based on the selected value
+     * @param threadCount The number of threads
+     */
+    private void updateThreadCountLabel(int threadCount) {
+        threadCountLabel.setText(threadCount + (threadCount == 1 ? " thread" : " threads"));
     }
 
     private void setupComboDisplay(ComboBox<ExportFormat> comboBox) {
@@ -168,15 +189,14 @@ public class ConfigController implements Initializable {
         } catch (Exception e) {
             showAlert("Error", "Could not load download view: " + e.getMessage());
         }
-    }
-
-    private void updateConfigModel() {
+    }    private void updateConfigModel() {
         ConfigModel config = App.getConfigModel();
         config.setExportFormat(GoogleMime.DOCS, docsFormatBox.getValue());
         config.setExportFormat(GoogleMime.SHEETS, sheetsFormatBox.getValue());
         config.setExportFormat(GoogleMime.SLIDES, slidesFormatBox.getValue());
         config.setExportFormat(GoogleMime.DRAWINGS, drawingsFormatBox.getValue());
         config.setExportFormat(GoogleMime.JAMBOARD, jamboardFormatBox.getValue());
+        config.setThreadCount((int) threadCountSlider.getValue());
     }
 
     private void showAlert(String title, String content) {

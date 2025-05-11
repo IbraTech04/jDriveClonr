@@ -12,6 +12,7 @@ public class ConfigModel {
     private static final Logger logger = LoggerFactory.getLogger(ConfigModel.class);
     private Path destinationDirectory;
     private final Map<String, ExportFormat> exportFormats;
+    private int threadCount = 4; // Default thread count
 
     public ConfigModel() {
         logger.info("Initializing ConfigModel");

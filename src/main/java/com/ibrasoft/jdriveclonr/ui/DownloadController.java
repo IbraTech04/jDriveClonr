@@ -20,6 +20,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.Duration;
@@ -32,17 +33,31 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Controller for the download view that manages the UI for downloading files from Google Drive.
  * Provides real-time progress updates, file-specific progress tracking, and download management.
  */
-public class DownloadController implements javafx.fxml.Initializable {
-
-    // FXML injected controls
-    @FXML private Label overallLabel;
-    @FXML private Label percentLabel;
-    @FXML private Label threadsCountLabel;
-    @FXML private ProgressBar overallBar;
-    @FXML private ListView<Task<?>> threadList;
-    @FXML private Button cancelBtn;
-    @FXML private Button closeBtn;
-    @FXML private StackPane emptyStatePane;
+public class DownloadController implements javafx.fxml.Initializable {    // FXML injected controls
+    @FXML
+    private Label overallLabel;
+    @FXML
+    private Label percentLabel;
+    @FXML
+    private Label threadsCountLabel;
+    @FXML
+    private Label failedCountLabel;
+    @FXML
+    private ProgressBar overallBar;
+    @FXML
+    private ListView<Task<?>> threadList;
+    @FXML
+    private Button cancelBtn;
+    @FXML
+    private Button closeBtn;
+    @FXML
+    private StackPane emptyStatePane;
+    @FXML
+    private HBox failedHeaderBox;
+    @FXML
+    private VBox failedDownloadsContainer;
+    @FXML
+    private StackPane failedDownloadsPane;
 
     private final ConcurrentLinkedQueue<FileFailure> failedFiles = new ConcurrentLinkedQueue<>();
 
@@ -50,7 +65,7 @@ public class DownloadController implements javafx.fxml.Initializable {
     // Services and tasks
     private final DownloadService service;
     private Task<?> downloadTask;
-    
+
     // UI state tracking
     private final DecimalFormat percentFormat = new DecimalFormat("0.0%");
     private final AtomicInteger fileCount = new AtomicInteger(0);
@@ -83,14 +98,19 @@ public class DownloadController implements javafx.fxml.Initializable {
     private void initializeUI() {
         percentLabel.setText("0%");
         threadsCountLabel.setText("0 files");
+        failedCountLabel.setText("0 files");
         overallLabel.textProperty().bind(statusMessage);
-        
+
         // Style the progress bar
         overallBar.setStyle("-fx-accent: #1967D2;");
-        
+
         // Empty state visibility binding
         emptyStatePane.visibleProperty().bind(Bindings.isEmpty(activeTasks));
         threadList.visibleProperty().bind(Bindings.isNotEmpty(activeTasks));
+
+        // Initialize failed downloads section (hidden initially)
+        failedHeaderBox.setVisible(false);
+        failedDownloadsPane.setVisible(false);
     }
 
     /**
@@ -120,14 +140,14 @@ public class DownloadController implements javafx.fxml.Initializable {
      */
     private void styleButton(Button button, String bgColor, String textColor, String hoverColor) {
         String baseStyle = String.format(
-            "-fx-background-color: %s; -fx-text-fill: %s; -fx-background-radius: 6;",
-            bgColor, textColor
+                "-fx-background-color: %s; -fx-text-fill: %s; -fx-background-radius: 6;",
+                bgColor, textColor
         );
         String hoverStyle = String.format(
-            "-fx-background-color: %s; -fx-text-fill: %s; -fx-background-radius: 6;",
-            hoverColor, textColor
+                "-fx-background-color: %s; -fx-text-fill: %s; -fx-background-radius: 6;",
+                hoverColor, textColor
         );
-        
+
         button.setStyle(baseStyle);
         button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
         button.setOnMouseExited(e -> button.setStyle(baseStyle));
@@ -191,11 +211,10 @@ public class DownloadController implements javafx.fxml.Initializable {
                                         // Let progress reach 100% before removal
                                     }
                                 });
-                            }),
-                            failure -> {
-                                // Store the failure and show popup
+                            }), failure -> {
+                                // Store the failure and update UI
                                 failedFiles.add(failure);
-                                Platform.runLater(() -> showFileFailurePopup(failure));
+                                Platform.runLater(() -> addFailedFileToUI(failure));
                             }
                     );
 
@@ -211,9 +230,48 @@ public class DownloadController implements javafx.fxml.Initializable {
         };
     }
 
-    private void showFileFailurePopup(FileFailure failure) {
+    private void addFailedFileToUI(FileFailure failure) {
+        // Make fail section visible if this is the first failure
+        if (!failedHeaderBox.isVisible()) {
+            failedHeaderBox.setVisible(true);
+            failedDownloadsPane.setVisible(true);
+        }
+
+        // Update the failed count label
+        int failedCount = failedFiles.size();
+        failedCountLabel.setText(failedCount + (failedCount == 1 ? " file" : " files"));
+
+        // Create a row for this failed download
+        HBox failedItem = new HBox(10);
+        failedItem.setPadding(new Insets(8, 10, 8, 10));
+        failedItem.setStyle("-fx-background-color: #FDEDED; -fx-background-radius: 6;");
+
+        // File name label
+        Label nameLabel = new Label(failure.getFileName());
+        nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #D93025;");
+
+        // Error message button
+        Button detailsBtn = new Button("Details");
+        detailsBtn.setStyle(
+                "-fx-background-color: transparent; -fx-text-fill: #1967D2; " +
+                        "-fx-border-color: #1967D2; -fx-border-radius: 4; -fx-cursor: hand;"
+        );
+        detailsBtn.setOnAction(e -> showErrorDetails(failure));
+
+        // Add a spacer
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        // Add components to the row
+        failedItem.getChildren().addAll(nameLabel, spacer, detailsBtn);
+
+        // Add to the container
+        failedDownloadsContainer.getChildren().add(failedItem);
+    }
+
+    private void showErrorDetails(FileFailure failure) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("File Download Failed");
+        alert.setTitle("Download Error Details");
         alert.setHeaderText("Failed to download: " + failure.getFileName());
 
         // Create expandable content for error details
@@ -249,10 +307,12 @@ public class DownloadController implements javafx.fxml.Initializable {
      * Sets up bindings for the download task.
      */
     private void setupDownloadTaskBindings() {
-        downloadTask.messageProperty().addListener((obs, old, newMsg) -> 
-            statusMessage.set(newMsg));
+        downloadTask.messageProperty().addListener((obs, old, newMsg) ->
+                statusMessage.set(newMsg));
         overallBar.progressProperty().bind(downloadTask.progressProperty());
-    }    /**
+    }
+
+    /**
      * Handles download completion.
      */
     private void onDownloadComplete() {
@@ -265,6 +325,7 @@ public class DownloadController implements javafx.fxml.Initializable {
 
             int count = fileCount.get();
             int failedCount = failedFiles.size();
+            int successCount = count - failedCount;
 
             if (failedCount > 0) {
                 statusMessage.set("Download completed with " + failedCount + " failures in " + timeText);
@@ -281,7 +342,7 @@ public class DownloadController implements javafx.fxml.Initializable {
 
                 String message = String.format(
                         "Successfully cloned %d %s from Google Drive in %s.",
-                        count, count == 1 ? "file" : "files", timeText
+                        successCount, successCount == 1 ? "file" : "files", timeText
                 );
                 alert.setContentText(message);
 
@@ -298,6 +359,7 @@ public class DownloadController implements javafx.fxml.Initializable {
             }
         });
     }
+
     /**
      * Formats duration into a human-readable string.
      */
@@ -316,9 +378,10 @@ public class DownloadController implements javafx.fxml.Initializable {
         alert.setTitle("Download Complete with Failures");
         alert.setHeaderText("Download completed with " + failedCount + " failures");
 
+        int successCount = totalCount - failedCount;
         String contentText = String.format(
-                "Cloned %d of %d files from Google Drive in %s.\n%d files failed to download.",
-                totalCount - failedCount, totalCount, timeText, failedCount
+                "Successfully cloned %d of %d files from Google Drive in %s.\n%d files failed to download.",
+                successCount, totalCount, timeText, failedCount
         );
         alert.setContentText(contentText);
 
@@ -408,6 +471,8 @@ public class DownloadController implements javafx.fxml.Initializable {
             downloadTask.cancel();
         }
         cleanupTasks();
+
+        // Don't remove failed files from display when cleanup is called
     }
 
     /**
@@ -433,8 +498,8 @@ public class DownloadController implements javafx.fxml.Initializable {
 
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(
-            Objects.requireNonNull(getClass().getResource("/styles/alert.css"))
-                .toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/styles/alert.css"))
+                        .toExternalForm()
         );
         dialogPane.getStyleClass().add("error-dialog");
 
@@ -514,7 +579,7 @@ public class DownloadController implements javafx.fxml.Initializable {
             // Update percentage
             percentLabel.textProperty().unbind();
             percentLabel.textProperty().bind(
-                task.progressProperty().multiply(100).asString("%.1f%%")
+                    task.progressProperty().multiply(100).asString("%.1f%%")
             );
 
             setGraphic(layout);

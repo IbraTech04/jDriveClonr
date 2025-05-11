@@ -54,10 +54,25 @@ public class DownloadService {
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);
         }
-    });
-
-    public DownloadService() {
+    });    public DownloadService() {
+        // Default to 4 threads, will be updated when downloadFile is called
         this.executorService = Executors.newFixedThreadPool(4, r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
+    }
+    
+    /**
+     * Creates a new thread pool with the specified number of threads
+     * @param threadCount The number of threads to use
+     */
+    private void initializeThreadPool(int threadCount) {
+        if (executorService != null && !executorService.isShutdown()) {
+            shutdownThreadPool();
+        }
+        
+        this.executorService = Executors.newFixedThreadPool(threadCount, r -> {
             Thread t = new Thread(r);
             t.setDaemon(true);
             return t;
@@ -80,6 +95,9 @@ public class DownloadService {
         this.folderFileNamesMap.clear();
         this.totalBytes.set(0);
         this.failedFiles.clear();
+        
+        // Initialize thread pool with the configured thread count
+        initializeThreadPool(config.getThreadCount());
 
         // Calculate total bytes first
         updateMessage("Calculating total size...");
@@ -258,6 +276,7 @@ public class DownloadService {
             @Override
             protected Void call() throws Exception {
                 updateMessage("Downloading: " + item.getName());
+                DownloadService.this.updateMessage("Downloading: " + item.getName());
 
                 long fileSize = item.getSize();
                 AtomicLong fileBytesProcessed = new AtomicLong(0);
@@ -282,10 +301,12 @@ public class DownloadService {
                         setLastModifiedFromDateTime(outFile, item.getModifiedTime());
                     }
                     updateMessage("Completed: " + item.getName());
+                    DownloadService.this.updateMessage("Completed: " + item.getName());
                 } catch (Exception e) {
                     if (!isCancelled) {
                         String errorMessage = e.getMessage();
                         updateMessage("Error downloading " + item.getName() + ": " + errorMessage);
+                        DownloadService.this.updateMessage("Error downloading " + item.getName() + ": " + errorMessage);
 
                         // Create FileFailure object and report it
                         FileFailure failure = new FileFailure(item.getName(), errorMessage);
@@ -299,6 +320,7 @@ public class DownloadService {
                         throw e;
                     } else {
                         updateMessage("Cancelled download of: " + item.getName());
+                        DownloadService.this.updateMessage("Cancelled download of: " + item.getName());
                     }
                 }
                 return null;
