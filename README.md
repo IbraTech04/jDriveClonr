@@ -76,19 +76,19 @@ including Google Workspace exporting, but jDriveClonr has additional features th
 - jDriveClonr fixes the issue of DriveClonrPro being unable to access certain shared files and folders.
 - jDriveClonr is *multithreaded*, which allows for faster cloning.
 
-    > [!WARNING]
-    > It is not recommended to run jDriveClonr with any more than 4-6 threads at a time. Any more and you risk 
-    > running into rate-limiting and other unpredictable behavior.
+> [!WARNING]
+> It is not recommended to run jDriveClonr with any more than 4-6 threads at a time. Any more and you risk 
+> running into rate-limiting and other unpredictable behavior.
 
 - jDriveClonr supports Google Photos cloning, which was not supported in jDriveClonr 
-    > [!NOTE]
-    > This feature is not yet implemented, but is planned for the future. Stay tuned!
+> [!NOTE]
+> This feature is not yet implemented, but is planned for the future. Stay tuned!
 
 - jDriveClonr uses JavaFX for the UI, rather than Tkinter. This allows for a more modern UI which supports hDPI scaling 
     and is more responsive overall.
 
-    > [!NOTE]
-  > This was one of the main gripes I had with DriveClonrPro. It looked horribly blurry on hDPI displays.
+> [!NOTE]
+> This was one of the main gripes I had with DriveClonrPro. It looked horribly blurry on hDPI displays.
 
 > Why do you keep making DriveClonr clones? Why haven't you checked yourself into a rehab facility yet?
 
