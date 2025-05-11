@@ -5,20 +5,37 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="30.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.ibrasoft.jdriveclonr.ui.WelcomeController">
-    <padding>
-        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
-    </padding>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ibrasoft.jdriveclonr.ui.WelcomeController"
+            prefWidth="600" prefHeight="500">
 
-    <ImageView fx:id="logoImageView" fitWidth="200" fitHeight="200" preserveRatio="true">
-        <Image url="@/DriveClonrLogo.png"/>
-    </ImageView>
-    
-    <Label text="Welcome to DriveClonr" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-    <Label text="Easily clone and backup your Google Drive content" style="-fx-font-size: 14px;"/>
-    
-    <Button text="Get Started" onAction="#onStartClicked" styleClass="primary-button"/>
-</VBox>
+    <center>
+        <VBox alignment="CENTER" spacing="30.0">
+            <padding>
+                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
+            </padding>
+
+            <ImageView fx:id="logoImageView" fitWidth="200" fitHeight="200" preserveRatio="true">
+                <Image url="@/DriveClonrLogo.png"/>
+            </ImageView>
+
+            <Label text="Welcome to DriveClonr" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Label text="The BEST way to archive your Google Drive!" style="-fx-font-size: 14px;"/>
+
+            <Button text="Start" onAction="#onStartClicked" styleClass="primary-button"/>
+        </VBox>
+    </center>
+
+    <bottom>
+        <VBox alignment="CENTER">
+            <padding>
+                <Insets bottom="10" top="10"/>
+            </padding>
+            <Label text="© 2025 IbraSoft. All rights reserved. | Version 1.0.0b" style="-fx-font-size: 10px; -fx-text-fill: gray;"/>
+        </VBox>
+    </bottom>
+
+</BorderPane>
