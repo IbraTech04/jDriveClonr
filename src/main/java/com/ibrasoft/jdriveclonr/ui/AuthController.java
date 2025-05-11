@@ -9,6 +9,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.stage.FileChooser;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class AuthController {
 
@@ -30,8 +34,32 @@ public class AuthController {
             controller.setDriveService(App.getDriveService());
 
             App.setScene(scene);
-            
-        } catch (Exception e) {
+
+        } catch (FileNotFoundException e) {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select Credentials File");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("JSON Files", "*.json")
+            );
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Credentials Not Found");
+            alert.setHeaderText("Please select your Google credentials file");
+            alert.setContentText("The credentials.json file was not found. Please download it from the Google Cloud Console and select it.");
+            alert.showAndWait();
+            File file = fileChooser.showOpenDialog(null);
+            if (file != null) {
+                GoogleOAuthService.setCredentialsFilePath(file.getAbsolutePath());
+                this.onSignInClicked(event);
+                return;
+            }
+            alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Credentials Not Found");
+            alert.setHeaderText("Invalid credentials file");
+            alert.setContentText("The credentials.json file was not found. Please download it from the Google Cloud Console and select it.");
+            alert.showAndWait();
+        }
+
+        catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Authentication Error");
             alert.setContentText("Failed to authenticate with Google: " + e.getMessage());
