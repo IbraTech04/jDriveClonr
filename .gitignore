@@ -41,3 +41,5 @@ build/
 
 *.log
 *.log*
+
+src/main/resources/credentials.json
