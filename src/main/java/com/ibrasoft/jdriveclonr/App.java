@@ -9,24 +9,29 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
 public class App extends Application {
+    private static final Logger logger = LoggerFactory.getLogger(App.class);
     private static Stage primaryStage;
+    @Getter
+    @Setter
     private static ConfigModel configModel;
     @Getter
     @Setter
     private static DriveAPIService driveService;
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) {
+        logger.info("Application started");
         primaryStage = stage;
         configModel = new ConfigModel();
         navigateTo("welcome.fxml");
         primaryStage.setTitle("DriveClonr");
         
-        // Set application icon
         Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/DriveClonrLogo.ico")));
         primaryStage.getIcons().add(icon);
         
@@ -46,14 +51,6 @@ public class App extends Application {
 
     public static void setScene(Scene scene) {
         primaryStage.setScene(scene);
-    }
-
-//    public static DriveAPIService getDriveService(){
-//        return driveService;
-//    }
-
-    public static ConfigModel getConfig() {
-        return configModel;
     }
 
     public static void main(String[] args) {

@@ -4,13 +4,17 @@ import lombok.Data;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Data
 public class ConfigModel {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigModel.class);
     private Path destinationDirectory;
     private final Map<String, ExportFormat> exportFormats;
 
     public ConfigModel() {
+        logger.info("Initializing ConfigModel");
         exportFormats = new HashMap<>();
         exportFormats.put(GoogleMime.DOCS, ExportFormat.DOCX);
         exportFormats.put(GoogleMime.SHEETS, ExportFormat.XLSX);

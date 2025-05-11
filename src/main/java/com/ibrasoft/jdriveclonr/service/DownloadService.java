@@ -4,6 +4,7 @@ import com.google.api.client.util.DateTime;
 import com.ibrasoft.jdriveclonr.model.ConfigModel;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.FileFailure;
 import com.ibrasoft.jdriveclonr.utils.FileUtils;
 import com.ibrasoft.jdriveclonr.utils.ProgressTrackingOutputStream;
 import javafx.application.Platform;
@@ -37,6 +38,9 @@ public class DownloadService {
     private final AtomicLong bytesProcessed = new AtomicLong(0);
     private final AtomicLong totalBytes = new AtomicLong(0);
 
+    private final ConcurrentLinkedQueue<FileFailure> failedFiles = new ConcurrentLinkedQueue<>();
+    private Consumer<FileFailure> fileFailureCallback;
+
     // Thread pool for parallel downloads
     private ExecutorService executorService;
     private List<Future<?>> runningTasks = new ArrayList<>();
@@ -58,19 +62,24 @@ public class DownloadService {
             t.setDaemon(true);
             return t;
         });
-
     }
 
-    public void downloadFile(DriveItem root, ConfigModel config, Consumer<Double> progressCallback,
-                             Consumer<String> messageCallback, Consumer<Task<?>> newTaskCallback) throws IOException {
+    // Update the downloadFile method to include the new callback parameter
+    public void downloadFile(DriveItem root, ConfigModel config,
+                             Consumer<Double> progressCallback,
+                             Consumer<String> messageCallback,
+                             Consumer<Task<?>> newTaskCallback,
+                             Consumer<FileFailure> fileFailureCallback) throws IOException {
         this.progressCallback = progressCallback;
         this.messageCallback = messageCallback;
         this.newTaskCallback = newTaskCallback;
+        this.fileFailureCallback = fileFailureCallback;
         this.isCancelled = false;
         this.bytesProcessed.set(0);
         this.runningTasks.clear();
         this.folderFileNamesMap.clear();
         this.totalBytes.set(0);
+        this.failedFiles.clear();
 
         // Calculate total bytes first
         updateMessage("Calculating total size...");
@@ -275,7 +284,18 @@ public class DownloadService {
                     updateMessage("Completed: " + item.getName());
                 } catch (Exception e) {
                     if (!isCancelled) {
-                        updateMessage("Error downloading " + item.getName() + ": " + e.getMessage());
+                        String errorMessage = e.getMessage();
+                        updateMessage("Error downloading " + item.getName() + ": " + errorMessage);
+
+                        // Create FileFailure object and report it
+                        FileFailure failure = new FileFailure(item.getName(), errorMessage);
+                        failedFiles.add(failure);
+
+                        // Notify through callback
+                        if (fileFailureCallback != null) {
+                            Platform.runLater(() -> fileFailureCallback.accept(failure));
+                        }
+
                         throw e;
                     } else {
                         updateMessage("Cancelled download of: " + item.getName());

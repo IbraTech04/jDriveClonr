@@ -1,18 +1,13 @@
 package com.ibrasoft.jdriveclonr.utils;
 
-import com.ibrasoft.jdriveclonr.model.ExportFormat;
-
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 public class FileUtils {
 
@@ -91,11 +86,6 @@ public class FileUtils {
         }
 
         return false;
-    }
-
-    public static boolean checkFileExists(String filePath, String fileName) {
-        File file = new File(filePath, fileName);
-        return file.exists();
     }
 
     /**

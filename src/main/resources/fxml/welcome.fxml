@@ -6,7 +6,6 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
 <VBox alignment="CENTER" spacing="30.0" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.ibrasoft.jdriveclonr.ui.WelcomeController">

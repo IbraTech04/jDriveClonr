@@ -1,6 +1,7 @@
 package com.ibrasoft.jdriveclonr.ui;
 
 import com.ibrasoft.jdriveclonr.App;
+import com.ibrasoft.jdriveclonr.model.FileFailure;
 import com.ibrasoft.jdriveclonr.service.DownloadService;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -8,6 +9,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
@@ -23,6 +25,7 @@ import java.text.DecimalFormat;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -41,6 +44,9 @@ public class DownloadController implements javafx.fxml.Initializable {
     @FXML private Button closeBtn;
     @FXML private StackPane emptyStatePane;
 
+    private final ConcurrentLinkedQueue<FileFailure> failedFiles = new ConcurrentLinkedQueue<>();
+
+
     // Services and tasks
     private final DownloadService service;
     private Task<?> downloadTask;
@@ -49,6 +55,7 @@ public class DownloadController implements javafx.fxml.Initializable {
     private final DecimalFormat percentFormat = new DecimalFormat("0.0%");
     private final AtomicInteger fileCount = new AtomicInteger(0);
     private final ObservableList<Task<?>> activeTasks = FXCollections.observableArrayList();
+    private final FilteredList<Task<?>> filteredActiveTasks;
     private final StringProperty statusMessage = new SimpleStringProperty("Preparing download...");
     private long startTime;
 
@@ -58,6 +65,7 @@ public class DownloadController implements javafx.fxml.Initializable {
     public DownloadController() {
         this.service = new DownloadService();
         this.service.setService(App.getDriveService());
+        this.filteredActiveTasks = new FilteredList<>(activeTasks, task -> task.getState() != Worker.State.SUCCEEDED && task.getState() != Worker.State.CANCELLED);
     }
 
     @Override
@@ -89,7 +97,7 @@ public class DownloadController implements javafx.fxml.Initializable {
      * Configures the ListView with custom cell factory for download items.
      */
     private void setupListView() {
-        threadList.setItems(activeTasks);
+        threadList.setItems(filteredActiveTasks);
         threadList.setCellFactory(lv -> new DownloadCell());
     }
 
@@ -160,30 +168,35 @@ public class DownloadController implements javafx.fxml.Initializable {
 
                 try {
                     service.downloadFile(
-                        DriveContentController.getSelectedRoot(),
-                        App.getConfig(),
-                        progress -> Platform.runLater(() -> {
-                            updateProgress(progress, 1);
-                            percentLabel.setText(percentFormat.format(progress));
-                        }),
-                        msg -> Platform.runLater(() -> {
-                            updateMessage(msg);
-                            statusMessage.set(msg);
-                            if (msg != null && msg.contains("Downloading")) {
-                                int count = fileCount.incrementAndGet();
-                                threadsCountLabel.setText(count + (count == 1 ? " file" : " files"));
-                            }
-                        }),
-                        task -> Platform.runLater(() -> {
-                            activeTasks.add(task);
-                            task.stateProperty().addListener((obs, old, newState) -> {
-                                if (newState == Worker.State.SUCCEEDED || 
-                                    newState == Worker.State.FAILED || 
-                                    newState == Worker.State.CANCELLED) {
-                                    // Let progress reach 100% before removal
+                            DriveContentController.getSelectedRoot(),
+                            App.getConfigModel(),
+                            progress -> Platform.runLater(() -> {
+                                updateProgress(progress, 1);
+                                percentLabel.setText(percentFormat.format(progress));
+                            }),
+                            msg -> Platform.runLater(() -> {
+                                updateMessage(msg);
+                                statusMessage.set(msg);
+                                if (msg != null && msg.contains("Downloading")) {
+                                    int count = fileCount.incrementAndGet();
+                                    threadsCountLabel.setText(count + (count == 1 ? " file" : " files"));
                                 }
-                            });
-                        })
+                            }),
+                            task -> Platform.runLater(() -> {
+                                activeTasks.add(task);
+                                task.stateProperty().addListener((obs, old, newState) -> {
+                                    if (newState == Worker.State.SUCCEEDED ||
+                                            newState == Worker.State.FAILED ||
+                                            newState == Worker.State.CANCELLED) {
+                                        // Let progress reach 100% before removal
+                                    }
+                                });
+                            }),
+                            failure -> {
+                                // Store the failure and show popup
+                                failedFiles.add(failure);
+                                Platform.runLater(() -> showFileFailurePopup(failure));
+                            }
                     );
 
                     updateMessage("Download completed");
@@ -196,6 +209,40 @@ public class DownloadController implements javafx.fxml.Initializable {
                 return null;
             }
         };
+    }
+
+    private void showFileFailurePopup(FileFailure failure) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("File Download Failed");
+        alert.setHeaderText("Failed to download: " + failure.getFileName());
+
+        // Create expandable content for error details
+        TextArea textArea = new TextArea(failure.getErrorMessage());
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+
+        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(textArea, Priority.ALWAYS);
+
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(new Label("Error details:"), 0, 0);
+        expContent.add(textArea, 0, 1);
+
+        // Set expandable content
+        alert.getDialogPane().setExpandableContent(expContent);
+
+        // Style the alert
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/styles/alert.css"))
+                        .toExternalForm()
+        );
+        dialogPane.getStyleClass().add("error-dialog");
+
+        alert.show();
     }
 
     /**
@@ -213,35 +260,44 @@ public class DownloadController implements javafx.fxml.Initializable {
             percentLabel.setText("100%");
             long duration = System.currentTimeMillis() - startTime;
             String timeText = formatDuration(duration);
-            statusMessage.set("Download completed in " + timeText);
             closeBtn.setDisable(false);
             cancelBtn.setDisable(true);
 
-            // Show success alert
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Download Complete");
-            alert.setHeaderText(null);
-            
             int count = fileCount.get();
-            String message = String.format(
-                "Successfully cloned %d %s from Google Drive in %s.",
-                count, count == 1 ? "file" : "files", timeText
-            );
-            alert.setContentText(message);
+            int failedCount = failedFiles.size();
 
-            // Style the alert
-            DialogPane dialogPane = alert.getDialogPane();
-            dialogPane.getStylesheets().add(
-                Objects.requireNonNull(getClass().getResource("/styles/alert.css"))
-                    .toExternalForm()
-            );
-            dialogPane.getStyleClass().add("success-dialog");
+            if (failedCount > 0) {
+                statusMessage.set("Download completed with " + failedCount + " failures in " + timeText);
 
-            // Show the alert
-            alert.show();
+                // Show a summary alert for all failures
+                showFailureSummaryAlert(count, failedCount, timeText);
+            } else {
+                statusMessage.set("Download completed in " + timeText);
+
+                // Show success alert
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Download Complete");
+                alert.setHeaderText(null);
+
+                String message = String.format(
+                        "Successfully cloned %d %s from Google Drive in %s.",
+                        count, count == 1 ? "file" : "files", timeText
+                );
+                alert.setContentText(message);
+
+                // Style the alert
+                DialogPane dialogPane = alert.getDialogPane();
+                dialogPane.getStylesheets().add(
+                        Objects.requireNonNull(getClass().getResource("/styles/alert.css"))
+                                .toExternalForm()
+                );
+                dialogPane.getStyleClass().add("success-dialog");
+
+                // Show the alert
+                alert.show();
+            }
         });
     }
-
     /**
      * Formats duration into a human-readable string.
      */
@@ -253,6 +309,58 @@ public class DownloadController implements javafx.fxml.Initializable {
             return String.format("%dm %ds", minutes, seconds);
         }
         return String.format("%ds", seconds);
+    }
+
+    private void showFailureSummaryAlert(int totalCount, int failedCount, String timeText) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Download Complete with Failures");
+        alert.setHeaderText("Download completed with " + failedCount + " failures");
+
+        String contentText = String.format(
+                "Cloned %d of %d files from Google Drive in %s.\n%d files failed to download.",
+                totalCount - failedCount, totalCount, timeText, failedCount
+        );
+        alert.setContentText(contentText);
+
+        // Create expandable content with list of failed files
+        TextArea textArea = new TextArea();
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+
+        StringBuilder failuresText = new StringBuilder();
+        int index = 1;
+        for (FileFailure failure : failedFiles) {
+            failuresText.append(index++).append(". ")
+                    .append(failure.getFileName())
+                    .append(" - ")
+                    .append(failure.getErrorMessage())
+                    .append("\n\n");
+        }
+        textArea.setText(failuresText.toString());
+
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(new Label("Failed files:"), 0, 0);
+        expContent.add(textArea, 0, 1);
+
+        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(textArea, Priority.ALWAYS);
+
+        // Set expandable content
+        alert.getDialogPane().setExpandableContent(expContent);
+
+        // Style the alert
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/styles/alert.css"))
+                        .toExternalForm()
+        );
+        dialogPane.getStyleClass().add("warning-dialog");
+
+        // Make the dialog resizable
+        alert.setResizable(true);
+
+        alert.showAndWait();
     }
 
     /**

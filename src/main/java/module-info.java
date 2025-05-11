@@ -7,7 +7,7 @@ module com.ibrasoft.jdriveclonr {
     requires jdk.httpserver;
 
     // Google API Client Libraries
-    requires transitive google.api.client; // Changed from 'requires' to 'requires transitive'
+    requires google.api.client; // Changed from 'requires' to 'requires transitive'
     requires com.google.gson;
     requires com.google.common;
     requires com.fasterxml.jackson.core;
@@ -23,6 +23,7 @@ module com.ibrasoft.jdriveclonr {
     requires gax;
     requires google.photos.library.client;
     requires com.google.api.client;
+    requires org.slf4j;
 
     // Allow FXML loader to access controllers
     opens com.ibrasoft.jdriveclonr to javafx.fxml;

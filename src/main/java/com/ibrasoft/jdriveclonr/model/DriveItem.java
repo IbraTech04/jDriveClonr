@@ -4,21 +4,22 @@ import com.google.api.client.util.DateTime;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.TreeItem;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import javafx.scene.control.TreeItem;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 @AllArgsConstructor
-@NoArgsConstructor
 @Data
 public class DriveItem {
+    private static final Logger logger = LoggerFactory.getLogger(DriveItem.class);
+
     private String id;
     private String name;
     private String mimeType;
@@ -28,6 +29,10 @@ public class DriveItem {
     private List<DriveItem> children;
     private Supplier<List<DriveItem>> next;
     private String binaryURL = null;
+
+    public DriveItem() {
+        logger.info("DriveItem instance created");
+    }
 
     public void setChildren(List<DriveItem> children) {
         // sort children based on type and name

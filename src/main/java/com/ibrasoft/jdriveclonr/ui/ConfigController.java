@@ -2,7 +2,6 @@ package com.ibrasoft.jdriveclonr.ui;
 
 import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.model.ConfigModel;
-import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
 import com.ibrasoft.jdriveclonr.utils.FileUtils;
@@ -19,7 +18,6 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
 
 public class ConfigController implements Initializable {
@@ -34,7 +32,7 @@ public class ConfigController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ConfigModel config = App.getConfig();
+        ConfigModel config = App.getConfigModel();
 
         // Populate format boxes
         docsFormatBox.getItems().addAll(ExportFormat.getFormatsForGoogleMime(GoogleMime.DOCS));
@@ -92,7 +90,7 @@ public class ConfigController implements Initializable {
 
         if (selectedDirectory != null) {
             destinationField.setText(selectedDirectory.getAbsolutePath());
-            App.getConfig().setDestinationDirectory(selectedDirectory.toPath());
+            App.getConfigModel().setDestinationDirectory(selectedDirectory.toPath());
         }
     }
 
@@ -107,26 +105,7 @@ public class ConfigController implements Initializable {
             Label title = new Label("What We Can Clone");
             title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
-            TextArea helpText = new TextArea();
-            helpText.setWrapText(true);
-            helpText.setEditable(false);
-            helpText.setPrefRowCount(10);
-            helpText.setText("""
-                    DriveClonr can clone the following types of files:
-                    
-                     - Google Docs → Microsoft Word, PDF, Plain Text, or HTML
-                     - Google Sheets → Microsoft Excel, PDF, CSV, or HTML
-                     - Google Slides → Microsoft PowerPoint, PDF, Plain Text, or HTML
-                     - Google Drawings → PNG, JPEG, SVG, or PDF
-                     - Google Jamboard → PDF or PNG
-
-                    We cannot clone:
-                     - Google Forms
-                     - Google Sites
-                     - Google Maps
-                     - Google My Maps
-                     - Google Keep
-                    """);
+            TextArea helpText = getTextArea();
 
             content.getChildren().addAll(title, helpText);
 
@@ -141,6 +120,33 @@ public class ConfigController implements Initializable {
         }
     }
 
+    private static TextArea getTextArea() {
+        TextArea helpText = new TextArea();
+        helpText.setWrapText(true);
+        helpText.setEditable(false);
+        helpText.setPrefRowCount(10);
+        helpText.setText("""
+                DriveClonr can clone the following types of files:
+                
+                 - Google Docs → Microsoft Word, PDF, Plain Text, or HTML
+                 - Google Sheets → Microsoft Excel, PDF, CSV, or HTML
+                 - Google Slides → Microsoft PowerPoint, PDF, Plain Text, or HTML
+                 - Google Drawings → PNG, JPEG, SVG, or PDF
+                 - Google Jamboard → PDF or PNG
+ 
+                 We can clone shared files, owned files, and trashed files. We can also
+                 clone entire shared drives.
+
+                However, we cannot clone:
+                 - Google Forms
+                 - Google Sites
+                 - Google Maps/My Maps
+                 - Google Keep
+                 - Any file which is a shortcut to another file
+                """);
+        return helpText;
+    }
+
     @FXML
     public void onStartClicked(ActionEvent event) throws Exception {
         if (destinationField.getText().isEmpty()) {
@@ -148,19 +154,12 @@ public class ConfigController implements Initializable {
             return;
         }
 
-        // Calculate the total size of the selected items, and the space remaining in the destination drive
-        // If the destination drive is full, show an alert and return
-
-        long totalSelectedSize = DriveContentController.getSelectedRoot().getSize();
-        long availableSpace = FileUtils.getFreeBytes(destinationField.getText());
-        if (totalSelectedSize > availableSpace) {
-            showAlert("Error", "The selected files require " + FileUtils.formatSize(totalSelectedSize) + " of free space. Your destination drive doesn't have enough room. Please either free up some space, choose a different drive, or select fewer files.");
-            return;
+        if (!FileUtils.checkWindowsRegistryLongPath()){
+            showAlert("Error", "Your destination drive doesn't support long paths. This can cause issues if your file names are too long. Please enable long paths in Windows Registry before proceeding.");
         }
 
         updateConfigModel();
 
-        // Items already selected, proceed to download view
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/downloadView.fxml"));
             Scene scene = new Scene(loader.load());
@@ -172,7 +171,7 @@ public class ConfigController implements Initializable {
     }
 
     private void updateConfigModel() {
-        ConfigModel config = App.getConfig();
+        ConfigModel config = App.getConfigModel();
         config.setExportFormat(GoogleMime.DOCS, docsFormatBox.getValue());
         config.setExportFormat(GoogleMime.SHEETS, sheetsFormatBox.getValue());
         config.setExportFormat(GoogleMime.SLIDES, slidesFormatBox.getValue());
@@ -191,6 +190,5 @@ public class ConfigController implements Initializable {
     @FXML
     private void onBackClicked(ActionEvent event) throws IOException {
         // TODO: Implement back navigation
-        return;
     }
 }

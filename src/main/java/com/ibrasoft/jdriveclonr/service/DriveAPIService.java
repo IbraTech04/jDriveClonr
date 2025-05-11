@@ -3,6 +3,7 @@ package com.ibrasoft.jdriveclonr.service;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
@@ -23,7 +24,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,14 +37,10 @@ public class DriveAPIService {
         this.googleCreds = credential;
         this.driveService = new Drive.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
-                JacksonFactory.getDefaultInstance(),
+                GsonFactory.getDefaultInstance(),
                 credential)
                 .setApplicationName("DriveClonr")
                 .build();
-    }
-
-    private List<File> fetchFiles(String query) throws IOException {
-        return fetchFiles(query, false);
     }
 
     /**
@@ -54,27 +50,24 @@ public class DriveAPIService {
      * @return A list of files matching the query.
      * @throws IOException If the request fails or an I/O error occurs.
      */
-    private List<File> fetchFiles(String query, boolean shared) throws IOException {
+    private List<File> fetchFiles(String query) throws IOException {
         List<File> files = new ArrayList<>();
         String pageToken = null;
         do {
             FileList result = driveService.files().list()
                     .setQ(query + " and mimeType != 'application/vnd.google-apps.form'"
-                            + "and mimeType != 'application/vnd.google-apps.shortcut' and mimeType != 'application/vnd.google-apps.drive-sdk'")
+                            + "and mimeType != 'application/vnd.google-apps.shortcut' and mimeType != 'application/vnd.google-apps.drive-sdk'"
+                    )
                     .setFields("nextPageToken, files(id, name, mimeType, parents, modifiedTime, size, shared, webContentLink)")
                     .setPageToken(pageToken)
                     .setPageSize(1000)
                     .setSupportsAllDrives(true)
+                    .setCorpora("allDrives")
+                    .setIncludeItemsFromAllDrives(true)
                     .execute();
             files.addAll(result.getFiles());
             pageToken = result.getNextPageToken();
         } while (pageToken != null);
-        // go through the files, make sure there exists a sharable link for each file that only people with access can see
-        if (shared) {
-            for (File file : files) {
-                String ignore = file.getWebViewLink();
-            }
-        }
         return files;
     }
 
@@ -83,8 +76,8 @@ public class DriveAPIService {
      * This is a virtual root node that contains all the files, and which implements lazy loading for all subtrees for
      * memory and performance benefits
      *
-     * @return
-     * @throws IOException
+     * @return A virtual root representing all the files in the user's Drive
+     * @throws IOException If the request fails or an I/O error occurs.
      */
     public DriveItem fetchRootOwnedItems() throws IOException {
         DriveItem virtualRoot =
@@ -108,12 +101,12 @@ public class DriveAPIService {
      * This is a virtual root node that contains all the files, and which implements lazy loading for all subtrees for
      * memory and performance benefits
      *
-     * @return
-     * @throws IOException
+     * @return A virtual root representing all the files which are shared with the user
+     * @throws IOException If the request fails or an I/O error occurs.
      */
     public DriveItem fetchRootSharedItems() throws IOException {
         DriveItem virtualRoot =
-                new DriveItem("root", "Shared With Me", "virtual/root",
+                new DriveItem("shared-root", "Shared With Me", "virtual/root",
                         0, null, false, new ArrayList<>(), () -> {
                     try {
                         List<File> files = fetchFiles("(trashed = false) and sharedWithMe");
@@ -136,13 +129,13 @@ public class DriveAPIService {
      * Beta Feature: Shared Drives Cloning
      * No Javadoc here because this is highly experimental and not yet ready for production
      *
-     * @param driveId
-     * @return
-     * @throws IOException
+     * @param driveId The ID of the shared drive to fetch files from
+     * @return A list of files in the shared drive
+     * @throws IOException If the request fails or an I/O error occurs.
      */
     private List<com.google.api.services.drive.model.File> fetchFilesInDrive(String driveId) throws IOException {
         FileList fileList = driveService.files().list()
-                .setQ("'root' in parents and trashed = false")
+                .setQ(String.format("'%s' in parents and trashed = false", driveId))
                 .setDriveId(driveId)
                 .setCorpora("drive")
                 .setSupportsAllDrives(true)
@@ -155,37 +148,27 @@ public class DriveAPIService {
 
 
     public DriveItem fetchRootSharedDrives() throws IOException {
-        // 1. List all shared drives
         Drive.Drives.List request = driveService.drives().list()
                 .setPageSize(100)
                 .setFields("drives(id, name, createdTime)");
 
         List<com.google.api.services.drive.model.Drive> drives = request.execute().getDrives();
 
-        // 2. Create the virtual root node
         DriveItem virtualRoot = new DriveItem(
                 "virtual-shared-root", "Shared Drives", "virtual/root",
-                0, null, false, new ArrayList<>(), () -> {
-            try {
-                return convertFileToDriveItems(fetchFiles("'root' in parents and trashed = false and 'me' in owners"));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }, null);
+                0, null, false, new ArrayList<>(), null, null);
 
-        // 3. For each shared drive, create a DriveItem node with lazy children loader
         for (com.google.api.services.drive.model.Drive drive : drives) {
             DriveItem sharedDriveItem = new DriveItem(
                     drive.getId(),
                     drive.getName(),
-                    "shared/drive/" + drive.getId(),
+                    "virtual/root",
                     0,
                     null,
-                    true, // isFolder
-                    null,
+                    true,
+                    List.of(),
                     () -> {
                         try {
-                            // Important: list files in *this* shared drive
                             return convertFileToDriveItems(
                                     fetchFilesInDrive(drive.getId())
                             );
@@ -205,8 +188,8 @@ public class DriveAPIService {
      * and creates a virtual root node for them
      * Again, all lazily-loaded :P
      *
-     * @return
-     * @throws IOException
+     * @return A virtual root representing all the files in the trash
+     * @throws IOException If the request fails or an I/O error occurs.
      */
     public DriveItem fetchRootTrashedItems() throws IOException {
         DriveItem virtualRoot =
@@ -229,8 +212,8 @@ public class DriveAPIService {
      * Converts a list of {@link File} objects to a list of {@link DriveItem} objects.
      * Also sets the children of each DriveItem to a lazy-loaded list of DriveItems.
      *
-     * @param files
-     * @return
+     * @param files The list of files to convert
+     * @return A list of DriveItem objects
      */
     public List<DriveItem> convertFileToDriveItems(List<File> files) {
         List<DriveItem> driveItems = new ArrayList<>();
@@ -241,7 +224,7 @@ public class DriveAPIService {
                     file.getMimeType(),
                     file.getSize() == null ? 0 : file.getSize(),
                     file.getModifiedTime(),
-                    file.getShared(),
+                    file.getShared() != null? file.getShared() : false,
                     new ArrayList<>(),
                     () -> {
                         try {
@@ -302,15 +285,7 @@ public class DriveAPIService {
         String fileID = d.getId();
 
         try {
-            // Get the file, and create an export link visible to only those with access to the file
-//            File file = this.driveService.files().get(fileID)
-//                    .setFields("exportLinks")
-//                    .execute();
-//            Map<String, String> exportLinks = file.getExportLinks();
-
-            // If the exportMIME is not null, we need to export the file. Otherwise, request the bytes directly
             if (mime != ExportFormat.DEFAULT) {
-                // Export the file
                 try {
                     this.driveService.files().export(fileID, mime.getMimeType())
                             .executeMediaAndDownloadTo(target);
@@ -321,13 +296,14 @@ public class DriveAPIService {
                     downloadFromExportLinkInto(this.googleCreds.getAccessToken(), downloadLink, target);
                 }
             } else {
-                // Download the file
                 try {
                     this.driveService.files().get(fileID)
                             .setSupportsAllDrives(true)
                             .executeMediaAndDownloadTo(target);
                 } catch (com.google.api.client.http.HttpResponseException e) {
-                    // Get the binary URL from the file
+                    // We have likely encountered a "schrodinger's file" scenario where the file is somehow both shared
+                    // and not shared with us => Use Binary Export Links trick
+
                     String downloadLink = d.getBinaryURL();
                     if (downloadLink != null) {
                         downloadFromExportLinkInto(this.googleCreds.getAccessToken(), downloadLink, target);
@@ -400,18 +376,19 @@ public class DriveAPIService {
     public static void downloadFromExportLinkInto(String token,
                                                   String link,
                                                   OutputStream target) throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newBuilder()
+        HttpResponse<InputStream> response;
+        try (HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(15))
-                .build();
+                .build()) {
 
-        HttpRequest request = HttpRequest.newBuilder(URI.create(link))
-                .header("Authorization", "Bearer " + token)
-                .GET()
-                .build();
+            HttpRequest request = HttpRequest.newBuilder(URI.create(link))
+                    .header("Authorization", "Bearer " + token)
+                    .GET()
+                    .build();
 
-        HttpResponse<InputStream> response =
-                client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        }
 
         if (response.statusCode() != 200) {
             String err = new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
@@ -429,9 +406,9 @@ public class DriveAPIService {
      * Used to create a copy of the current running instance for Thread Safety, because the Google Drive API is *not*
      * Thread-safe by default
      *
-     * @return
-     * @throws GeneralSecurityException
-     * @throws IOException
+     * @return A new instance of DriveAPIService
+     * @throws GeneralSecurityException If the credentials are invalid or cannot be loaded
+     * @throws IOException If anything goes wrong with loading the credentials
      */
     public DriveAPIService createCopy() throws GeneralSecurityException, IOException {
         return new DriveAPIService(this.googleCreds);

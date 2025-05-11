@@ -7,14 +7,19 @@ import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class DriveItemCell extends CheckBoxTreeCell<DriveItem> {
+    private static final Logger logger = LoggerFactory.getLogger(DriveItemCell.class);
+
     private final HBox container;
     private final Label nameLabel;
     private final Label detailsLabel;
 
     public DriveItemCell() {
+        logger.info("DriveItemCell instance created");
         nameLabel = new Label();
         detailsLabel = new Label();
         detailsLabel.setTextFill(Color.GRAY);

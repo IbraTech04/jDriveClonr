@@ -19,19 +19,19 @@ import java.util.ResourceBundle;
 
 public class DriveContentController implements Initializable {
 
-    /* ----------  FXML  ---------- */
-    @FXML private TreeView<DriveItem> driveTreeView;
-    @FXML private Button           startCloneButton;
-    @FXML private VBox             loadingOverlay;
-    @Getter private static DriveItem selectedRoot;
+    @FXML
+    private TreeView<DriveItem> driveTreeView;
+    @FXML
+    private Button startCloneButton;
+    @FXML
+    private VBox loadingOverlay;
+    @Getter
+    private static DriveItem selectedRoot;
 
-    /* ----------  DI / services  ---------- */
     private DriveAPIService driveService;
 
-    /* ----------  JavaFX lifecycle  ---------- */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Basic TreeView configuration (cells, hide root)
         driveTreeView.setCellFactory(tv -> new DriveItemCell());
         driveTreeView.setShowRoot(true);
 
@@ -44,10 +44,9 @@ public class DriveContentController implements Initializable {
      */
     public void setDriveService(DriveAPIService driveService) {
         this.driveService = driveService;
-        loadDriveContent();                  // kick off async fetch now that we have the service
+        loadDriveContent();
     }
 
-    /* ----------  Fetch & build tree ---------- */
     private void loadDriveContent() {
         if (loadingOverlay != null) loadingOverlay.setVisible(true);
 
@@ -55,13 +54,13 @@ public class DriveContentController implements Initializable {
             @Override
             protected TreeItem<DriveItem> call() throws Exception {
                 // 1. Fetch data (off FX thread)
-                DriveItem ownedRoot   = driveService.fetchRootOwnedItems();
-                DriveItem sharedRoot  = driveService.fetchRootSharedItems();
+                DriveItem ownedRoot = driveService.fetchRootOwnedItems();
+                DriveItem sharedRoot = driveService.fetchRootSharedItems();
                 DriveItem trashRoot = driveService.fetchRootTrashedItems();
                 DriveItem sharedDrivesRoot = driveService.fetchRootSharedDrives();
 
                 // 2. Build CheckBoxTreeItems (still off FX thread – ok)
-                CheckBoxTreeItem<DriveItem> ownedNode  = ownedRoot.toLazyTreeItem();
+                CheckBoxTreeItem<DriveItem> ownedNode = ownedRoot.toLazyTreeItem();
                 CheckBoxTreeItem<DriveItem> sharedNode = sharedRoot.toLazyTreeItem();
                 CheckBoxTreeItem<DriveItem> trashNode = trashRoot.toLazyTreeItem();
                 CheckBoxTreeItem<DriveItem> sharedDrivesNode = sharedDrivesRoot.toLazyTreeItem();
@@ -72,6 +71,7 @@ public class DriveContentController implements Initializable {
                 CheckBoxTreeItem<DriveItem> virtualRoot = new CheckBoxTreeItem<>(virtualRootValue);
                 virtualRoot.getChildren().addAll(ownedNode, sharedNode, trashNode, sharedDrivesNode);
                 virtualRoot.setSelected(true);
+                virtualRoot.setExpanded(true);
                 return virtualRoot;
             }
         };
@@ -100,6 +100,9 @@ public class DriveContentController implements Initializable {
         t.start();
     }
 
+    /**
+     * Updates the state of the clone button based on the current selection in the tree.
+     */
     private void updateCloneButtonState() {
         if (startCloneButton == null) return;
         boolean any = anySelected((CheckBoxTreeItem<DriveItem>) driveTreeView.getRoot());
@@ -119,8 +122,9 @@ public class DriveContentController implements Initializable {
     }
 
     /**
-     /**
+     * /**
      * Returns a DriveItem tree containing only selected items with their hierarchy preserved.
+     *
      * @param item The root checkbox tree item
      * @return A new DriveItem tree with only selected nodes
      */
@@ -154,7 +158,8 @@ public class DriveContentController implements Initializable {
 
     /* ----------  UI actions ---------- */
 
-    @FXML private void onBackClicked() { 
+    @FXML
+    private void onBackClicked() {
         App.navigateTo("auth.fxml");
     }
 
@@ -179,14 +184,20 @@ public class DriveContentController implements Initializable {
     private void showAlert(String title, String content) {
         Platform.runLater(() -> {
             Alert a = new Alert(Alert.AlertType.INFORMATION);
-            a.setTitle(title); a.setHeaderText(null); a.setContentText(content); a.showAndWait();
+            a.setTitle(title);
+            a.setHeaderText(null);
+            a.setContentText(content);
+            a.showAndWait();
         });
     }
 
     private void showError(String message) {
         Platform.runLater(() -> {
             Alert a = new Alert(Alert.AlertType.ERROR);
-            a.setTitle("Error"); a.setHeaderText(null); a.setContentText(message); a.showAndWait();
+            a.setTitle("Error");
+            a.setHeaderText(null);
+            a.setContentText(message);
+            a.showAndWait();
         });
     }
 }
