@@ -10,7 +10,7 @@ public interface IDocumentExporter {
      * @param filePath the path to export the document to
      * @param format the MIMEType to export the document in
      */
-    void exportDocument(String filePath, ExportFormat format);
+    void exportDocument(DriveItem d, String filePath, ExportFormat format);
 
     /**
      * Checks if the exporter supports the given DriveItem and ExportFormat.

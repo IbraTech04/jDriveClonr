@@ -6,6 +6,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.GoogleMime;
 import lombok.Data;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ public class GoogleSheetsExporter implements IDocumentExporter {
 
     private Sheets service;
     Credential creds;
+    private final GoogleMime SUPPORTED_EXPORTS = GoogleMime.SHEETS;
 
     public GoogleSheetsExporter(Credential creds) throws GeneralSecurityException, IOException {
         this.creds = creds;
@@ -24,11 +26,11 @@ public class GoogleSheetsExporter implements IDocumentExporter {
                 .build();
     }
     @Override
-    public void exportDocument(String filePath, ExportFormat format) {
+    public void exportDocument(DriveItem d, String filePath, ExportFormat format) {
     }
 
     @Override
     public boolean supports(DriveItem d, ExportFormat format) {
-        return d.getMimeType().equals("application/vnd.google-apps.spreadsheet");
+        return d.getMimeType().equals(this.SUPPORTED_EXPORTS.getMimeType());
     }
 }

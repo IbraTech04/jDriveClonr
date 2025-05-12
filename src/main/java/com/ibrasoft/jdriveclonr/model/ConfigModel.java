@@ -17,11 +17,11 @@ public class ConfigModel {
     public ConfigModel() {
         logger.info("Initializing ConfigModel");
         exportFormats = new HashMap<>();
-        exportFormats.put(GoogleMime.DOCS, ExportFormat.DOCX);
-        exportFormats.put(GoogleMime.SHEETS, ExportFormat.XLSX);
-        exportFormats.put(GoogleMime.SLIDES, ExportFormat.PPTX);
-        exportFormats.put(GoogleMime.DRAWINGS, ExportFormat.PNG);
-        exportFormats.put(GoogleMime.JAMBOARD, ExportFormat.PDF);
+        exportFormats.put(GoogleMime.DOCS.getMimeType(), ExportFormat.DOCX);
+        exportFormats.put(GoogleMime.SHEETS.getMimeType(), ExportFormat.XLSX);
+        exportFormats.put(GoogleMime.SLIDES.getMimeType(), ExportFormat.PPTX);
+        exportFormats.put(GoogleMime.DRAWINGS.getMimeType(), ExportFormat.PNG);
+        exportFormats.put(GoogleMime.JAMBOARD.getMimeType(), ExportFormat.PDF);
     }
 
     public void setExportFormat(String googleMimeType, ExportFormat format) {

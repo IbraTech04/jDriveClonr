@@ -42,7 +42,7 @@ public enum ExportFormat {
         return null;
     }
 
-    public static List<ExportFormat> getFormatsForGoogleMime(String googleMimeType) {
+    public static List<ExportFormat> getFormatsForGoogleMime(GoogleMime googleMimeType) {
         List<ExportFormat> list = new ArrayList<>();
         switch (googleMimeType) {
             case GoogleMime.DOCS -> list.addAll(List.of(DOCX, ODT, PDF, MARKDOWN, TXT, HTML, ZIPHTML, EPUB));

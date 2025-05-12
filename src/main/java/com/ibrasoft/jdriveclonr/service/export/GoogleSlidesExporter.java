@@ -22,7 +22,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
                 .build();
     }
     @Override
-    public void exportDocument(String filePath, ExportFormat format) {
+    public void exportDocument(DriveItem d, String filePath, ExportFormat format) {
     }
 
     @Override
