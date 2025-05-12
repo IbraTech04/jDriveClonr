@@ -10,6 +10,9 @@ public enum ExportFormat {
     DOCX("Microsoft Word (.docx)", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ".docx"),
     XLSX("Microsoft Excel (.xlsx)", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx"),
     PPTX("Microsoft PowerPoint (.pptx)", "application/vnd.openxmlformats-officedocument.presentationml.presentation", ".pptx"),
+    ODT("Open Document Text (.odt)", "application/vnd.oasis.opendocument.text", ".odt"),
+    ODS("Open Document Spreadsheet (.ods)", "application/vnd.oasis.opendocument.spreadsheet", ".ods"),
+    ODP("Open Document Presentation (.odp)", "application/vnd.oasis.opendocument.presentation", ".odp"),
     PDF("PDF (.pdf)", "application/pdf", ".pdf"),
     PNG("PNG Image (.png)", "image/png", ".png"),
     JPEG("JPEG Image (.jpg)", "image/jpeg", ".jpg"),
@@ -17,7 +20,10 @@ public enum ExportFormat {
     TXT("Plain Text (.txt)", "text/plain", ".txt"),
     HTML("HTML (.html)", "text/html", ".html"),
     CSV("CSV (.csv)", "text/csv", ".csv"),
+    TSV("TSV (.tsv)", "text/tab-separated-values", ".tsv"),
     MARKDOWN("Markdown (.md)", "text/markdown", ".md"),
+    ZIPHTML("Zipped HTML Archive (.zip)", "application/zip", ".zip"),
+    EPUB("EPUB (.epub)", "application/epub+zip", ".epub"),
     DEFAULT("Default", "application/vnd.google-apps.unknown", "");
     private final String uiLabel;
     private final String mimeType;
@@ -39,11 +45,11 @@ public enum ExportFormat {
     public static List<ExportFormat> getFormatsForGoogleMime(String googleMimeType) {
         List<ExportFormat> list = new ArrayList<>();
         switch (googleMimeType) {
-            case GoogleMime.DOCS -> list.addAll(List.of(DOCX, PDF, MARKDOWN, TXT, HTML));
-            case GoogleMime.SHEETS -> list.addAll(List.of(XLSX, PDF, CSV, HTML));
-            case GoogleMime.SLIDES -> list.addAll(List.of(PPTX, PDF, TXT, HTML));
+            case GoogleMime.DOCS -> list.addAll(List.of(DOCX, ODT, PDF, MARKDOWN, TXT, HTML, ZIPHTML, EPUB));
+            case GoogleMime.SHEETS -> list.addAll(List.of(XLSX, ODS, PDF, CSV, TSV, HTML, ZIPHTML));
+            case GoogleMime.SLIDES -> list.addAll(List.of(PPTX, ODP, PDF, TXT));
             case GoogleMime.DRAWINGS -> list.addAll(List.of(PNG, JPEG, SVG, PDF));
-            case GoogleMime.JAMBOARD -> list.addAll(List.of(PDF, PNG));
+            case GoogleMime.JAMBOARD -> list.add(PDF);
         }
         return list;
     }

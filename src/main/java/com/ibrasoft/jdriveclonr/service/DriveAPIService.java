@@ -377,30 +377,30 @@ public class DriveAPIService {
     public static void downloadFromExportLinkInto(String token,
                                                   String link,
                                                   OutputStream target) throws IOException, InterruptedException {
-        HttpResponse<InputStream> response;
-        try (HttpClient client = HttpClient.newBuilder()
+        HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(15))
-                .build()) {
+                .build();
 
-            HttpRequest request = HttpRequest.newBuilder(URI.create(link))
-                    .header("Authorization", "Bearer " + token)
-                    .GET()
-                    .build();
+        HttpRequest request = HttpRequest.newBuilder(URI.create(link))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
 
-            response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-        }
+        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
         if (response.statusCode() != 200) {
-            String err = new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
-            throw new IOException("Failed to download: HTTP " + response.statusCode() + " – " + err);
+            try (InputStream errStream = response.body()) {
+                String err = new String(errStream.readAllBytes(), StandardCharsets.UTF_8);
+                throw new IOException("Failed to download: HTTP " + response.statusCode() + " – " + err);
+            }
         }
 
-        // Still just a stream‑to‑stream pipe
         try (InputStream in = response.body()) {
             in.transferTo(target);
         }
     }
+
 
 
     /**
