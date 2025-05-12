@@ -24,6 +24,8 @@ module com.ibrasoft.jdriveclonr {
     requires google.photos.library.client;
     requires com.google.api.client;
     requires org.slf4j;
+    requires google.api.services.sheets.v4.rev612;
+    requires google.api.services.slides.v1.rev399;
 
     // Allow FXML loader to access controllers
     opens com.ibrasoft.jdriveclonr to javafx.fxml;

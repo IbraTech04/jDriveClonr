@@ -81,6 +81,21 @@
             <scope>annotationProcessor</scope>
         </dependency>
 
+        <!-- Google Sheets -->
+
+        <!-- https://mvnrepository.com/artifact/com.google.apis/google-api-services-sheets -->
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-sheets</artifactId>
+            <version>v4-rev612-1.25.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.apis/google-api-services-slides -->
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-slides</artifactId>
+            <version>v1-rev399-1.18.0-rc</version>
+        </dependency>
 
         <!-- Google HTTP Client -->
         <dependency>

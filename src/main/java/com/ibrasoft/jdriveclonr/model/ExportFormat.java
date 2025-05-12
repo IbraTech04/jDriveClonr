@@ -62,4 +62,16 @@ public enum ExportFormat {
         }
         return "";
     }
+
+    /**
+     * Returns whether the provided ExportFormat results in data loss for multi-sub-document files.
+     * @param format The format to check
+     * @return True if the format is primitive (e.g., CSV, JPG, PNG), false otherwise
+     */
+    public static boolean isPrimitive(ExportFormat format) {
+        return switch (format) {
+            case CSV, TSV, PNG, JPEG, SVG -> true;
+            default -> false;
+        };
+    }
 }
