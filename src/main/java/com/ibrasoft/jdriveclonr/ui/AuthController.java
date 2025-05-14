@@ -4,6 +4,7 @@ import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.auth.GoogleOAuthService;
 import com.ibrasoft.jdriveclonr.service.DriveAPIService;
 import com.google.api.client.auth.oauth2.Credential;
+import com.ibrasoft.jdriveclonr.service.ServiceRepository;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -21,7 +22,7 @@ public class AuthController {
         try {
             // Get credentials
             Credential credential = GoogleOAuthService.authorize();
-
+            ServiceRepository.init(credential);
             // Create drive service and store it in App
             DriveAPIService driveService = new DriveAPIService(credential);
             App.setDriveService(driveService);

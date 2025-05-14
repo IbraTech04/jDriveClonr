@@ -1,4 +1,4 @@
-package com.ibrasoft.jdriveclonr.service.export;
+package com.ibrasoft.jdriveclonr.export;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -8,29 +8,26 @@ import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 @Data
+@NoArgsConstructor
 public class GoogleSheetsExporter implements IDocumentExporter {
 
-    private Sheets service;
-    Credential creds;
-    private final GoogleMime SUPPORTED_EXPORTS = GoogleMime.SHEETS;
+    final GoogleMime SUPPORTED_MIME = GoogleMime.SHEETS;
 
-    public GoogleSheetsExporter(Credential creds) throws GeneralSecurityException, IOException {
-        this.creds = creds;
-        this.service = new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), creds)
-                .setApplicationName("DriveClonr")
-                .build();
-    }
     @Override
     public void exportDocument(DriveItem d, String filePath, ExportFormat format) {
+        if (!format.isPrimitive()) {
+            // If not primitive => Export as normal
+        }
     }
 
     @Override
     public boolean supports(DriveItem d, ExportFormat format) {
-        return d.getMimeType().equals(this.SUPPORTED_EXPORTS.getMimeType());
+        return d.getMimeType().equals(this.SUPPORTED_MIME.getMimeType());
     }
 }

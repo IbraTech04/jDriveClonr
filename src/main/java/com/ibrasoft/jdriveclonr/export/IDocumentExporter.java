@@ -1,9 +1,13 @@
-package com.ibrasoft.jdriveclonr.service.export;
+package com.ibrasoft.jdriveclonr.export;
 
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.GoogleMime;
 
 public interface IDocumentExporter {
+
+    final GoogleMime SUPPORTED_MIME = null;
+
     /**
      * Exports a document to the specified file path.
      *

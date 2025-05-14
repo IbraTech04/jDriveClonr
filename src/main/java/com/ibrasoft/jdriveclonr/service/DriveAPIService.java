@@ -35,12 +35,7 @@ public class DriveAPIService {
 
     public DriveAPIService(Credential credential) throws GeneralSecurityException, IOException {
         this.googleCreds = credential;
-        this.driveService = new Drive.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                GsonFactory.getDefaultInstance(),
-                credential)
-                .setApplicationName("DriveClonr")
-                .build();
+        this.driveService = ServiceRepository.driveService;
     }
 
     /**
@@ -241,39 +236,8 @@ public class DriveAPIService {
         return driveItems;
     }
 
-    @Deprecated
-    public ByteArrayOutputStream downloadFile(String fileID, ExportFormat mime) throws IOException {
-
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-            // If the exportMIME is not null, we need to export the file. Otherwise, request the bytes directly
-            if (mime != ExportFormat.DEFAULT) {
-                // Export the file
-                try {
-                    this.driveService.files().export(fileID, mime.getMimeType())
-                            .executeMediaAndDownloadTo(outputStream);
-                } catch (IOException e) {
-                    // We have likely run into a scenario where the file is too big to be exported, therefore we must
-                    // Use the export links trick.
-                    String downloadLink = fetchExportLinksFromFileId(fileID, mime);
-                    return downloadFromExportLink(this.googleCreds.getAccessToken(), downloadLink);
-                }
-            } else {
-                // Download the file
-                this.driveService.files().get(fileID)
-                        .executeMediaAndDownloadTo(outputStream);
-            }
-
-            return outputStream;
-        } catch (GoogleJsonResponseException e) {
-            System.err.println("Unable to move file: " + e.getDetails());
-            throw e;
-        }
-    }
 
     /**
-     * Unlike {@link #downloadFile(String, ExportFormat)}, this method does not load the file into memory
      * This method allows for pushing files into an arbitrary instance of {@link OutputStream}, allowing
      * for streaming the file to a different location.
      *
@@ -333,45 +297,6 @@ public class DriveAPIService {
                 .execute();
         Map<String, String> exportLinks = file.getExportLinks();
         return exportLinks.get(mime.getMimeType());
-    }
-
-    /**
-     * Downloads a file from a given export link using the provided token.
-     * Streams the response into a {@link java.io.ByteArrayOutputStream} so it
-     * works on Java8 (no{@code InputStream.readAllBytes}) and avoids holding
-     * two copies of the data in memory.
-     *
-     * @param token the OAuth2 bearer token
-     * @param link  the Google Drive “export” URL
-     * @return the downloaded file contents
-     * @throws IOException if the request fails or an I/O error occurs
-     */
-    @Deprecated
-    public static ByteArrayOutputStream downloadFromExportLink(String token, String link) throws IOException {
-        URL url = new URL(link);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Authorization", "Bearer " + token);
-
-        // Buffer size: 8KiB is a good default
-        final int BUFFER_SIZE = 8 * 1024;
-
-        try (InputStream in = conn.getInputStream();
-             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int bytesRead;
-
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
-
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                return out;
-            } else {
-                throw new IOException("Failed to download file: HTTP " + conn.getResponseCode());
-            }
-        }
     }
 
     public static void downloadFromExportLinkInto(String token,

@@ -31,7 +31,8 @@ public class ConfigController implements Initializable {
     @FXML private Button helpButton;
     @FXML private Slider threadCountSlider;
     @FXML private Label threadCountLabel;
-    @FXML private Label threadWarningLabel;    @Override
+    @FXML private Label threadWarningLabel;
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
         ConfigModel config = App.getConfigModel();
 
