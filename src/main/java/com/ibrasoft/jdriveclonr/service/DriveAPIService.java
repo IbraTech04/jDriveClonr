@@ -35,7 +35,7 @@ public class DriveAPIService {
 
     public DriveAPIService(Credential credential) throws GeneralSecurityException, IOException {
         this.googleCreds = credential;
-        this.driveService = ServiceRepository.driveService;
+        this.driveService = ServiceRepository.getDriveService();
     }
 
     /**

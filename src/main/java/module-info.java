@@ -12,7 +12,7 @@ module com.ibrasoft.jdriveclonr {
     requires com.google.common;
     requires com.fasterxml.jackson.core;
     requires com.google.api.client.auth;
-    requires com.google.api.services.drive;
+//    requires com.google.api.services.drive;
     requires com.google.api.client.json.gson;
     requires com.google.api.client.extensions.java6.auth;
     requires com.google.api.client.extensions.jetty.auth;
@@ -24,8 +24,10 @@ module com.ibrasoft.jdriveclonr {
     requires google.photos.library.client;
     requires com.google.api.client;
     requires org.slf4j;
-    requires google.api.services.sheets.v4.rev612;
+//    requires google.api.services.sheets.v4.rev612;
     requires google.api.services.slides.v1.rev399;
+    requires google.api.services.drive.v3.rev197;
+    requires google.api.services.sheets.v4.rev614;
 
     // Allow FXML loader to access controllers
     opens com.ibrasoft.jdriveclonr to javafx.fxml;

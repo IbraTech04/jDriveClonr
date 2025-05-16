@@ -4,6 +4,8 @@ import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
 
+import java.io.IOException;
+
 public interface IDocumentExporter {
 
     final GoogleMime SUPPORTED_MIME = null;
@@ -14,7 +16,7 @@ public interface IDocumentExporter {
      * @param filePath the path to export the document to
      * @param format the MIMEType to export the document in
      */
-    void exportDocument(DriveItem d, String filePath, ExportFormat format);
+    void exportDocument(DriveItem d, String filePath, ExportFormat format) throws IOException, InterruptedException;
 
     /**
      * Checks if the exporter supports the given DriveItem and ExportFormat.

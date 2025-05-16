@@ -11,7 +11,10 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import lombok.Data;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
@@ -54,7 +57,9 @@ public class DownloadService {
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);
         }
-    });    public DownloadService() {
+    });
+
+    public DownloadService() {
         // Default to 4 threads, will be updated when downloadFile is called
         this.executorService = Executors.newFixedThreadPool(4, r -> {
             Thread t = new Thread(r);
@@ -62,16 +67,17 @@ public class DownloadService {
             return t;
         });
     }
-    
+
     /**
      * Creates a new thread pool with the specified number of threads
+     *
      * @param threadCount The number of threads to use
      */
     private void initializeThreadPool(int threadCount) {
         if (executorService != null && !executorService.isShutdown()) {
             shutdownThreadPool();
         }
-        
+
         this.executorService = Executors.newFixedThreadPool(threadCount, r -> {
             Thread t = new Thread(r);
             t.setDaemon(true);
@@ -95,7 +101,7 @@ public class DownloadService {
         this.folderFileNamesMap.clear();
         this.totalBytes.set(0);
         this.failedFiles.clear();
-        
+
         // Initialize thread pool with the configured thread count
         initializeThreadPool(config.getThreadCount());
 
@@ -107,7 +113,7 @@ public class DownloadService {
         String dateTime = String.format("%1$tY-%1$tm-%1$td %1$tH-%1$tM-%1$tS", System.currentTimeMillis());
         File accDest = new File(config.getDestinationDirectory().toFile(), "DriveClonr - " + dateTime);
         if (!accDest.exists()) {
-            if (!accDest.mkdirs()){
+            if (!accDest.mkdirs()) {
                 throw new IOException("Failed to create directory: " + accDest.getAbsolutePath());
             }
         }
@@ -160,9 +166,10 @@ public class DownloadService {
 
     /**
      * Recursively downloads files and folders from Google Drive.
-     * @param d The DriveItem to download
+     *
+     * @param d        The DriveItem to download
      * @param currPath The current directory to download into
-     * @param config The application configuration
+     * @param config   The application configuration
      * @throws IOException If an error occurs during download
      */
     private void downloadFileRecursive(DriveItem d, File currPath, ConfigModel config) throws IOException {
@@ -239,8 +246,9 @@ public class DownloadService {
 
     /**
      * Pre-processes the children of a DriveItem to sanitize filenames and resolve conflicts.
-     * @param parent The parent DriveItem
-     * @param config The application configuration
+     *
+     * @param parent        The parent DriveItem
+     * @param config        The application configuration
      * @param folderPathKey The key for the folder path in the map
      */
     private void preProcessChildren(DriveItem parent, ConfigModel config, String folderPathKey) {
@@ -267,9 +275,10 @@ public class DownloadService {
 
     /**
      * Submits a download task to the thread pool for the given DriveItem.
-     * @param item The DriveItem to download
+     *
+     * @param item           The DriveItem to download
      * @param destinationDir The directory to download the file into
-     * @param config The application configuration
+     * @param config         The application configuration
      */
     private void submitDownloadTask(DriveItem item, File destinationDir, ConfigModel config) {
         Task<Void> downloadTask = new Task<>() {
@@ -340,8 +349,9 @@ public class DownloadService {
     /**
      * Resolves filename conflicts by checking against existing names
      * and generating a new name if needed
-     * @param item The DriveItem to resolve
-     * @param config The application configuration
+     *
+     * @param item          The DriveItem to resolve
+     * @param config        The application configuration
      * @param folderPathKey The key for the folder path in the map
      */
     private String resolveFilenameConflict(DriveItem item, ConfigModel config, String folderPathKey) {
@@ -395,6 +405,7 @@ public class DownloadService {
     /**
      * Updates the progress of the download by a specific increment of bytes.
      * Called by ProgressTrackingOutputStream.
+     *
      * @param bytesIncrement The number of bytes processed in the last write operation.
      */
     private synchronized void updateProgressByIncrement(long bytesIncrement) {
@@ -416,6 +427,7 @@ public class DownloadService {
      * Updates the progress of the download.
      * This method is kept for potential future use or for signalling completion of a phase,
      * but primary progress is now through updateProgressByIncrement.
+     *
      * @param bytes The number of bytes processed (e.g. size of a completed file).
      */
     private void updateProgress(long bytes) {
@@ -431,6 +443,7 @@ public class DownloadService {
 
     /**
      * Updates the message displayed in the UI.
+     *
      * @param message The message to display.
      */
     private void updateMessage(String message) {
