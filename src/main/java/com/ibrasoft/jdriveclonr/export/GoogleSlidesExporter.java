@@ -8,6 +8,7 @@ import com.google.api.services.slides.v1.model.Thumbnail;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
+import com.ibrasoft.jdriveclonr.utils.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -25,16 +26,15 @@ public class GoogleSlidesExporter implements IDocumentExporter {
 
     private final Slides slidesService;
     private final Credential credential;
-    final GoogleMime SUPPORTED_MIME = GoogleMime.SLIDES;
-
-    @Override
+    final GoogleMime SUPPORTED_MIME = GoogleMime.SLIDES;    @Override
     public void exportDocument(DriveItem d, String filePath, ExportFormat format, ProgressCallback pc) throws IOException, InterruptedException {
         // A) Create a folder with the current drive item name
-        File dest = new File(filePath, d.getName());
+        String sanitizedName = FileUtils.sanitizeFilename(d.getName());
+        File dest = new File(filePath, sanitizedName);
 
         if (!dest.mkdir()) {
-            throw new IOException("Failed to create directory: " + filePath + File.separator + d.getName());
-        }        try {
+            throw new IOException("Failed to create directory: " + filePath + File.separator + sanitizedName);
+        }try {
             Presentation presentation = slidesService
                     .presentations()
                     .get(d.getId())

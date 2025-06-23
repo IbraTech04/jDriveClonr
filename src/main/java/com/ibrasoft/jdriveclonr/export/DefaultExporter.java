@@ -7,6 +7,7 @@ import com.google.api.services.drive.model.File;
 import com.google.common.util.concurrent.RateLimiter;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
+import com.ibrasoft.jdriveclonr.utils.FileUtils;
 import com.ibrasoft.jdriveclonr.utils.ProgressTrackingOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,33 +28,6 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-/**
- * DefaultExporter with Dependency Injection - handles all types of Google Drive files.
- * Provides progress tracking and proper error handling.
- * 
- * Features:
- * - Export format conversion (Docs to PDF, Sheets to Excel, etc.)
- * - Binary file downloads
- * - Progress tracking with ProgressCallback
- * - Rate limiting support
- * - Fallback mechanisms for restricted files
- * 
- * Usage example:
- * <pre>
- * // Create services using factory
- * GoogleServiceFactory.GoogleServices services = GoogleServiceFactory.createServices(credential);
- * 
- * // Create exporter with injected dependencies
- * DefaultExporter exporter = new DefaultExporter(
- *     services.getDriveService(), 
- *     services.getCredential(),
- *     services.getRateLimiter()
- * );
- * 
- * // Export with progress tracking
- * exporter.exportDocument(driveItem, outputPath, exportFormat, progressCallback);
- * </pre>
- */
 public class DefaultExporter implements IDocumentExporter {
     
     private Drive driveService;
@@ -134,10 +108,23 @@ public class DefaultExporter implements IDocumentExporter {
         if (driveService == null || credential == null) {
             throw new IllegalStateException("DefaultExporter not properly initialized with dependencies");
         }
+          String fileID = d.getId();
+        String sanitizedName = FileUtils.sanitizeFilename(d.getName());
+        String fileName = sanitizedName + mime.getExtension();
         
-        String fileID = d.getId();
-        String fileName = d.getName() + mime.getExtension();
-        String fullPath = filePath + fileName;
+        // Ensure proper path separator - filePath should end with separator
+        String normalizedPath = filePath;
+        if (!normalizedPath.endsWith(java.io.File.separator)) {
+            normalizedPath += java.io.File.separator;
+        }
+        String fullPath = normalizedPath + fileName;
+        
+        // Debug logging
+        System.out.println("DEBUG: DefaultExporter.exportDocument called with:");
+        System.out.println("  - DriveItem: " + d.getName() + " (ID: " + d.getId() + ")");
+        System.out.println("  - FilePath: '" + filePath + "'");
+        System.out.println("  - Format: " + mime);
+        System.out.println("  - Full path will be: '" + fullPath + "'");
         
         pc.updateProgress(0.0, 1.0, "Preparing to download: " + fileName);
         

@@ -101,9 +101,9 @@ public class DownloadService extends Service<Void> {
                     }
                 } else {
                     System.out.println("Folder '" + root.getName() + "' has no children or children failed to load");
-                }
-            } else {
+                }            } else {
                 try {
+                    
                     DriveDownloadTask task = new DriveDownloadTask(root, currPath.toString(), exporterRegistry);
 
                     Platform.runLater(() -> downloadTasks.add(task));
