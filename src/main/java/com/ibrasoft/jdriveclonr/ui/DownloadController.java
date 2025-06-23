@@ -1,6 +1,5 @@
 package com.ibrasoft.jdriveclonr.ui;
 
-import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.model.DriveDownloadTask;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.FileFailure;
@@ -28,14 +27,13 @@ import java.text.DecimalFormat;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Controller for the download view that manages the UI for downloading files from Google Drive.
  * Provides real-time progress updates, file-specific progress tracking, and download management.
  */
-public class DownloadController implements javafx.fxml.Initializable {    // FXML injected controls
+public class DownloadController implements javafx.fxml.Initializable {
     @FXML
     private Label overallLabel;
     @FXML
@@ -61,12 +59,9 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
     @FXML
     private StackPane failedDownloadsPane;
 
-    private final ConcurrentLinkedQueue<FileFailure> failedFiles = new ConcurrentLinkedQueue<>();
-
 
     // Services and tasks
     private final DownloadService service;
-    private Task<?> downloadTask;
 
     // UI state tracking
     private final DecimalFormat percentFormat = new DecimalFormat("0.0%");
@@ -87,6 +82,8 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
 
     @Override
     public void initialize(URL u, ResourceBundle rb) {
+        Bindings.bindContent(activeTasks, service.getDownloadTasks());
+//        Bindings.bindContent(failed)
         initializeUI();
         setupListView();
         setupButtons();
@@ -170,48 +167,46 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
      */
     private void startDownload() {
         startTime = System.currentTimeMillis();
-        // TODO: Invoke downloadService to start here
         this.service.start();
     }
-
-    private void addFailedFileToUI(FileFailure failure) {
-        // Make fail section visible if this is the first failure
-        if (!failedHeaderBox.isVisible()) {
-            failedHeaderBox.setVisible(true);
-            failedDownloadsPane.setVisible(true);
-        }
-
-        // Update the failed count label
-        int failedCount = failedFiles.size();
-        failedCountLabel.setText(failedCount + (failedCount == 1 ? " file" : " files"));
-
-        // Create a row for this failed download
-        HBox failedItem = new HBox(10);
-        failedItem.setPadding(new Insets(8, 10, 8, 10));
-        failedItem.setStyle("-fx-background-color: #FDEDED; -fx-background-radius: 6;");
-
-        // File name label
-        Label nameLabel = new Label(failure.getFileName());
-        nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #D93025;");
-
-        // Error message button
-        Button detailsBtn = new Button("Details");
-        detailsBtn.setStyle(
-                "-fx-background-color: transparent; -fx-text-fill: #1967D2; " +
-                        "-fx-border-color: #1967D2; -fx-border-radius: 4; -fx-cursor: hand;"
-        );
-        detailsBtn.setOnAction(e -> showErrorDetails(failure));
-
-        // Add a spacer
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        // Add components to the row
-        failedItem.getChildren().addAll(nameLabel, spacer, detailsBtn);
-
-        // Add to the container
-        failedDownloadsContainer.getChildren().add(failedItem);
-    }
+//
+//    private void addFailedFileToUI(FileFailure failure) {
+//        // Make fail section visible if this is the first failure
+//        if (!failedHeaderBox.isVisible()) {
+//            failedHeaderBox.setVisible(true);
+//            failedDownloadsPane.setVisible(true);
+//        }
+//
+//        // Update the failed count label
+//        failedCountLabel.setText(failedCount + (failedCount == 1 ? " file" : " files"));
+//
+//        // Create a row for this failed download
+//        HBox failedItem = new HBox(10);
+//        failedItem.setPadding(new Insets(8, 10, 8, 10));
+//        failedItem.setStyle("-fx-background-color: #FDEDED; -fx-background-radius: 6;");
+//
+//        // File name label
+//        Label nameLabel = new Label(failure.getFileName());
+//        nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #D93025;");
+//
+//        // Error message button
+//        Button detailsBtn = new Button("Details");
+//        detailsBtn.setStyle(
+//                "-fx-background-color: transparent; -fx-text-fill: #1967D2; " +
+//                        "-fx-border-color: #1967D2; -fx-border-radius: 4; -fx-cursor: hand;"
+//        );
+//        detailsBtn.setOnAction(e -> showErrorDetails(failure));
+//
+//        // Add a spacer
+//        Region spacer = new Region();
+//        HBox.setHgrow(spacer, Priority.ALWAYS);
+//
+//        // Add components to the row
+//        failedItem.getChildren().addAll(nameLabel, spacer, detailsBtn);
+//
+//        // Add to the container
+//        failedDownloadsContainer.getChildren().add(failedItem);
+//    }
 
     private void showErrorDetails(FileFailure failure) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -248,15 +243,6 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
     }
 
     /**
-     * Sets up bindings for the download task.
-     */
-    private void setupDownloadTaskBindings() {
-        downloadTask.messageProperty().addListener((obs, old, newMsg) ->
-                statusMessage.set(newMsg));
-        overallBar.progressProperty().bind(downloadTask.progressProperty());
-    }
-
-    /**
      * Handles download completion.
      */
     private void onDownloadComplete() {
@@ -268,7 +254,8 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
             cancelBtn.setDisable(true);
 
             int count = fileCount.get();
-            int failedCount = failedFiles.size();
+//            int failedCount = failedFiles.size();
+            int failedCount = 0;
             int successCount = count - failedCount;
 
             if (failedCount > 0) {
@@ -336,13 +323,13 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
 
         StringBuilder failuresText = new StringBuilder();
         int index = 1;
-        for (FileFailure failure : failedFiles) {
-            failuresText.append(index++).append(". ")
-                    .append(failure.getFileName())
-                    .append(" - ")
-                    .append(failure.getErrorMessage())
-                    .append("\n\n");
-        }
+//        for (FileFailure failure : failedFiles) {
+//            failuresText.append(index++).append(". ")
+//                    .append(failure.getFileName())
+//                    .append(" - ")
+//                    .append(failure.getErrorMessage())
+//                    .append("\n\n");
+//        }
         textArea.setText(failuresText.toString());
 
         GridPane expContent = new GridPane();
@@ -387,13 +374,13 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
      */
     @FXML
     private void cancelDownload() {
-        if (downloadTask != null && !downloadTask.isDone()) {
-            service.cancel();
-            downloadTask.cancel();
-            statusMessage.set("Download cancelled");
-            closeBtn.setDisable(false);
-            cancelBtn.setDisable(true);
-        }
+//        if (downloadTask != null && !downloadTask.isDone()) {
+//            service.cancel();
+//            downloadTask.cancel();
+//            statusMessage.set("Download cancelled");
+//            closeBtn.setDisable(false);
+//            cancelBtn.setDisable(true);
+//        }
         cleanupTasks();
     }
 
@@ -410,10 +397,10 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
      * Cleans up resources before closing.
      */
     private void cleanup() {
-        if (downloadTask != null && !downloadTask.isDone()) {
-            service.cancel();
-            downloadTask.cancel();
-        }
+//        if (downloadTask != null && !downloadTask.isDone()) {
+//            service.cancel();
+//            downloadTask.cancel();
+//        }
         cleanupTasks();
 
         // Don't remove failed files from display when cleanup is called
@@ -514,7 +501,6 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
                 DriveItem item = fileTask.getDriveItem();
                 nameLabel.setText(item.getName());
                 statusLabel.setText(task.getMessage());
-                // Could also show file size, etc.
             }
 
             percentLabel.textProperty().unbind();

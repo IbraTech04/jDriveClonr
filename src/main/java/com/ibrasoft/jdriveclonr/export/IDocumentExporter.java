@@ -4,6 +4,7 @@ import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public interface IDocumentExporter {
@@ -16,7 +17,7 @@ public interface IDocumentExporter {
      * @param filePath the path to export the document to
      * @param format the MIMEType to export the document in
      */
-    void exportDocument(DriveItem d, String filePath, ExportFormat format) throws IOException, InterruptedException;
+    void exportDocument(DriveItem d, String filePath, ExportFormat format, ProgressCallback pc) throws IOException, InterruptedException;
 
     /**
      * Checks if the exporter supports the given DriveItem and ExportFormat.
@@ -25,4 +26,9 @@ public interface IDocumentExporter {
      * @return True if this exporter supports the given DriveItem and ExportFormat, false otherwise
      */
     boolean supports(DriveItem d, ExportFormat format);
+
+    @FunctionalInterface
+    interface ProgressCallback {
+        void updateProgress(double workDone, double totalWork, String message);
+    }
 }

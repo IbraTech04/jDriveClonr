@@ -7,6 +7,7 @@ import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
 import com.ibrasoft.jdriveclonr.service.ServiceRepository;
 import com.ibrasoft.jdriveclonr.utils.FileUtils;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,26 +22,31 @@ public class GoogleSheetsExporter implements IDocumentExporter {
     final GoogleMime SUPPORTED_MIME = GoogleMime.SHEETS;
 
     @Override
-    public void exportDocument(DriveItem d, String filePath, ExportFormat format) throws IOException, InterruptedException {
+    public void exportDocument(DriveItem d, String filePath, ExportFormat format, ProgressCallback pc) throws IOException, InterruptedException {
         if (!format.isPrimitive()) {
-            ExportUtils.downloadNormally(d, filePath, format);
+//            ExportUtils.downloadNormally(d, filePath, format, pc);
         }
         else{
             // If it *is* primitive => We need to
             // A) Create a folder with the current driveitem name
             // B) Iterate over all sub-documents and export them one-by-one into the folder
 
-            File dest = new File (filePath, d.getName());
+
+
+            File dest = new File (filePath, FileUtils.sanitizeFilename(d.getName()));
 
             if (!dest.mkdir()) {
                 throw new IOException("Failed to create directory: " + filePath + d.getName());
             }
 
             Spreadsheet sheet = ServiceRepository.getSheetsService().spreadsheets().get(d.getId()).execute();
-            for (Sheet s: sheet.getSheets()) {
+            for (int i = 0; i < sheet.getSheets().size(); i++) {
+
+                Sheet s = sheet.getSheets().get(i);
                 String sheetName = s.getProperties().getTitle();
                 sheetName = FileUtils.sanitizeFilename(sheetName);
                 Integer gid = s.getProperties().getSheetId();
+                pc.updateProgress((i/(1.0 * sheet.getSheets().size())), 1.0, "Exporting sheet: " + sheetName);
 
                 String exportUrl = String.format(
                         "https://docs.google.com/spreadsheets/d/%s/gviz/tq?tqx=out:%s&gid=%s",
@@ -49,13 +55,13 @@ public class GoogleSheetsExporter implements IDocumentExporter {
                 File outFile = new File(dest, sheetName + format.getExtension());
 
                 try (FileOutputStream output = new FileOutputStream(outFile)) {
-                    ExportUtils.downloadFromExportLinkInto(
+                    DefaultExporter.downloadFromExportLinkInto(
                             ServiceRepository.getCredential().getAccessToken(),
                             exportUrl,
                             output
                     );
                 }
-
+                pc.updateProgress((i+1/(1.0 * sheet.getSheets().size())), 1.0, "Exporting sheet: " + sheetName);
             }
         }
     }

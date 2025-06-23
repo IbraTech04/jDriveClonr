@@ -17,6 +17,10 @@ public class ExporterRegistry {
     });
 
     public IDocumentExporter find(DriveItem item, ExportFormat fmt) {
+        if (!fmt.isPrimitive()){
+            // return the last exporter in the list. i.e: the DefaultExporter
+            return exporters.get().getLast();
+        }
         return exporters.get().stream()
                 .filter(e -> e.supports(item, fmt))
                 .findFirst()

@@ -1,6 +1,7 @@
 package com.ibrasoft.jdriveclonr.service;
 
 import com.ibrasoft.jdriveclonr.App;
+import com.ibrasoft.jdriveclonr.export.ExporterRegistry;
 import com.ibrasoft.jdriveclonr.model.DriveDownloadTask;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.utils.FileUtils;
@@ -27,6 +28,7 @@ public class DownloadService extends Service<Void> {
     private final ObservableList<Task<?>> downloadTasks = FXCollections.observableArrayList();
     private final ObservableList<Task<?>> completedTasks = FXCollections.observableArrayList();
     private final ObservableList<Task<?>> failedTasks = FXCollections.observableArrayList();
+    private final ExporterRegistry exporterRegistry = new ExporterRegistry();
 
     public DownloadService(DriveItem rootItem) {
         this.rootItem = rootItem;
@@ -81,7 +83,10 @@ public class DownloadService extends Service<Void> {
                         }
                         
                         try {
-                            recurseAndAddTasks(child, currPath.resolve(FileUtils.sanitizeFilename(child.getName())));
+                            if (child.isFolder())
+                                recurseAndAddTasks(child, currPath.resolve(FileUtils.sanitizeFilename(child.getName())));
+                            else
+                                recurseAndAddTasks(child, currPath);
                         } catch (Exception e) {
                             System.err.println("Error processing child '" + child.getName() + "': " + e.getMessage());
                         }
@@ -91,7 +96,7 @@ public class DownloadService extends Service<Void> {
                 }
             } else {
                 try {
-                    DriveDownloadTask task = new DriveDownloadTask(root, currPath.toString());
+                    DriveDownloadTask task = new DriveDownloadTask(root, currPath.toString(), exporterRegistry);
 
                     Platform.runLater(() -> downloadTasks.add(task));
 
