@@ -1,66 +1,60 @@
 package com.ibrasoft.jdriveclonr.service;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.services.drive.Drive;
-import com.google.api.services.slides.v1.Slides;
-import com.google.api.services.sheets.v4.Sheets;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.Getter;
 
+/**
+ * Legacy ServiceRepository - now deprecated in favor of dependency injection.
+ * Use GoogleServiceFactory.createServices() for new code.
+ */
+@Deprecated
 public class ServiceRepository {
 
-    private static final ThreadLocal<Credential> threadLocalCredential = new ThreadLocal<>();
-    private static final ThreadLocal<Drive> threadLocalDrive = new ThreadLocal<>();
-    private static final ThreadLocal<Slides> threadLocalSlides = new ThreadLocal<>();
-    private static final ThreadLocal<Sheets> threadLocalSheets = new ThreadLocal<>();
+    private static final ThreadLocal<GoogleServiceFactory.GoogleServices> threadLocalServices = 
+        ThreadLocal.withInitial(() -> null);
 
     @Getter
     private static final RateLimiter rateLimiter = RateLimiter.create(1);
 
     public static void init(Credential credential) {
-        threadLocalCredential.set(credential);
         try {
-            var transport = GoogleNetHttpTransport.newTrustedTransport();
-            var jsonFactory = GsonFactory.getDefaultInstance();
-
-            threadLocalDrive.set(new Drive.Builder(transport, jsonFactory, credential)
-                    .setApplicationName("DriveClonr")
-                    .build());
-
-            threadLocalSlides.set(new Slides.Builder(transport, jsonFactory, credential)
-                    .setApplicationName("DriveClonr")
-                    .build());
-
-            threadLocalSheets.set(new Sheets.Builder(transport, jsonFactory, credential)
-                    .setApplicationName("DriveClonr")
-                    .build());
+            GoogleServiceFactory.GoogleServices services = GoogleServiceFactory.createServices(credential);
+            threadLocalServices.set(services);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to initialize Google services", e);
         }
     }
 
-    public static Drive getDriveService() {
-        return threadLocalDrive.get();
+    private static GoogleServiceFactory.GoogleServices getServices() {
+        GoogleServiceFactory.GoogleServices services = threadLocalServices.get();
+        if (services == null) {
+            throw new IllegalStateException("ServiceRepository not initialized for current thread. Call init() first or use GoogleServiceFactory.createServices() instead.");
+        }
+        return services;
     }
 
-    public static Slides getSlidesService() {
-        return threadLocalSlides.get();
+    public static com.google.api.services.drive.Drive getDriveService() {
+        return getServices().getDriveService();
     }
 
-    public static Sheets getSheetsService() {
-        return threadLocalSheets.get();
+    public static com.google.api.services.slides.v1.Slides getSlidesService() {
+        return getServices().getSlidesService();
+    }
+
+    public static com.google.api.services.sheets.v4.Sheets getSheetsService() {
+        return getServices().getSheetsService();
     }
 
     public static Credential getCredential() {
-        return threadLocalCredential.get();
+        return getServices().getCredential();
+    }
+
+    public static boolean isInitialized() {
+        return threadLocalServices.get() != null;
     }
 
     public static void clear() {
-        threadLocalCredential.remove();
-        threadLocalDrive.remove();
-        threadLocalSlides.remove();
-        threadLocalSheets.remove();
+        threadLocalServices.remove();
     }
 }

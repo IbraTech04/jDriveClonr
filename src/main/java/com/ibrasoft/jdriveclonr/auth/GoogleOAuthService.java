@@ -10,6 +10,8 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.slides.v1.SlidesScopes;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +27,9 @@ public class GoogleOAuthService {
 
     private static final List<String> SCOPES = List.of(
             DriveScopes.DRIVE,
-            "https://www.googleapis.com/auth/photoslibrary.readonly"
+            "https://www.googleapis.com/auth/photoslibrary.readonly",
+            SheetsScopes.SPREADSHEETS,
+            SlidesScopes.PRESENTATIONS
     );
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 

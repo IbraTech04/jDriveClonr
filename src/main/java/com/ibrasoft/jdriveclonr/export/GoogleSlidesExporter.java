@@ -1,25 +1,30 @@
 package com.ibrasoft.jdriveclonr.export;
 
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.services.slides.v1.Slides;
 import com.google.api.services.slides.v1.model.Page;
 import com.google.api.services.slides.v1.model.Presentation;
 import com.google.api.services.slides.v1.model.Thumbnail;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
-import com.ibrasoft.jdriveclonr.service.ServiceRepository;
-import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 
-@NoArgsConstructor
+@Data
+@AllArgsConstructor
 public class GoogleSlidesExporter implements IDocumentExporter {
 
+    private final Slides slidesService;
+    private final Credential credential;
     final GoogleMime SUPPORTED_MIME = GoogleMime.SLIDES;
 
     @Override
@@ -29,10 +34,8 @@ public class GoogleSlidesExporter implements IDocumentExporter {
 
         if (!dest.mkdir()) {
             throw new IOException("Failed to create directory: " + filePath + File.separator + d.getName());
-        }
-
-        try {
-            Presentation presentation = ServiceRepository.getSlidesService()
+        }        try {
+            Presentation presentation = slidesService
                     .presentations()
                     .get(d.getId())
                     .execute();
@@ -44,7 +47,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
                 String pageId = slide.getObjectId();
                 pc.updateProgress((i / (1.0 * slides.size())), 1.0, "Exporting slide: " + slide.getPageElements().get(0).getObjectId());
                 // Use Google Slides API to generate a PNG thumbnail
-                Thumbnail thumbnail = ServiceRepository.getSlidesService()
+                Thumbnail thumbnail = slidesService
                         .presentations()
                         .pages()
                         .getThumbnail(d.getId(), pageId)
@@ -55,9 +58,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
                 String contentUrl = thumbnail.getContentUrl();
 
                 String slideName = String.format("Slide %02d", i + 1);
-                File outFile = new File(dest, slideName + ".png");
-
-                try (InputStream in = new URL(contentUrl).openStream();
+                File outFile = new File(dest, slideName + ".png");                try (InputStream in = URI.create(contentUrl).toURL().openStream();
                      FileOutputStream output = new FileOutputStream(outFile)) {
                     in.transferTo(output);
                 }

@@ -1,24 +1,26 @@
 package com.ibrasoft.jdriveclonr.export;
 
+import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
+import com.google.api.client.auth.oauth2.Credential;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
-import com.ibrasoft.jdriveclonr.service.ServiceRepository;
 import com.ibrasoft.jdriveclonr.utils.FileUtils;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 @Data
-@NoArgsConstructor
+@AllArgsConstructor
 public class GoogleSheetsExporter implements IDocumentExporter {
 
+    private final Sheets sheetsService;
+    private final Credential credential;
     final GoogleMime SUPPORTED_MIME = GoogleMime.SHEETS;
 
     @Override
@@ -37,9 +39,14 @@ public class GoogleSheetsExporter implements IDocumentExporter {
 
             if (!dest.mkdir()) {
                 throw new IOException("Failed to create directory: " + filePath + d.getName());
+            }            Spreadsheet sheet = null;
+            try {
+                sheet = sheetsService.spreadsheets().get(d.getId()).execute();
             }
-
-            Spreadsheet sheet = ServiceRepository.getSheetsService().spreadsheets().get(d.getId()).execute();
+            catch (Exception e) {
+                System.err.println("Failed to fetch spreadsheet: " + e.getMessage());
+                throw new IOException("Failed to fetch spreadsheet", e);
+            }
             for (int i = 0; i < sheet.getSheets().size(); i++) {
 
                 Sheet s = sheet.getSheets().get(i);
@@ -52,11 +59,9 @@ public class GoogleSheetsExporter implements IDocumentExporter {
                         "https://docs.google.com/spreadsheets/d/%s/gviz/tq?tqx=out:%s&gid=%s",
                         d.getId(), format.getShortMime(), gid
                 );
-                File outFile = new File(dest, sheetName + format.getExtension());
-
-                try (FileOutputStream output = new FileOutputStream(outFile)) {
+                File outFile = new File(dest, sheetName + format.getExtension());                try (FileOutputStream output = new FileOutputStream(outFile)) {
                     DefaultExporter.downloadFromExportLinkInto(
-                            ServiceRepository.getCredential().getAccessToken(),
+                            credential.getAccessToken(),
                             exportUrl,
                             output
                     );

@@ -4,6 +4,7 @@ import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.export.ExporterRegistry;
 import com.ibrasoft.jdriveclonr.model.DriveDownloadTask;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
+import com.ibrasoft.jdriveclonr.ui.AuthController;
 import com.ibrasoft.jdriveclonr.utils.FileUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -24,16 +25,23 @@ import java.util.concurrent.Executors;
 public class DownloadService extends Service<Void> {
 
     private DriveItem rootItem;
-    private final ExecutorService executorService;
-    private final ObservableList<Task<?>> downloadTasks = FXCollections.observableArrayList();
+    private final ExecutorService executorService;    private final ObservableList<Task<?>> downloadTasks = FXCollections.observableArrayList();
     private final ObservableList<Task<?>> completedTasks = FXCollections.observableArrayList();
     private final ObservableList<Task<?>> failedTasks = FXCollections.observableArrayList();
-    private final ExporterRegistry exporterRegistry = new ExporterRegistry();
+    private ExporterRegistry exporterRegistry;
 
     public DownloadService(DriveItem rootItem) {
         this.rootItem = rootItem;
         this.executorService = Executors.newFixedThreadPool(
                 App.getConfigModel().getThreadCount() > 0 ? App.getConfigModel().getThreadCount() : 4);
+        
+        // Initialize services and exporter registry
+        try {
+            GoogleServiceFactory.GoogleServices services = GoogleServiceFactory.createServices(ServiceRepository.getCredential());
+            this.exporterRegistry = ExporterRegistry.create(services);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize services for download", e);
+        }
     }
 
     @Override
