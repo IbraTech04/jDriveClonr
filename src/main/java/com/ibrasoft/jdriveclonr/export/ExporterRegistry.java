@@ -11,17 +11,15 @@ import java.util.List;
 @AllArgsConstructor
 public class ExporterRegistry {
 
-    private final List<IDocumentExporter> exporters;
-
-    public static ExporterRegistry create(GoogleServiceFactory.GoogleServices services) {
+    private final List<IDocumentExporter> exporters;    public static ExporterRegistry create(GoogleServiceFactory.GoogleServices services) {
         List<IDocumentExporter> exporters = new ArrayList<>();
         
         // Add specialized exporters with dependency injection
         exporters.add(new GoogleSheetsExporter(services.getSheetsService(), services.getCredential()));
         exporters.add(new GoogleSlidesExporter(services.getSlidesService(), services.getCredential()));
         
-        // Add default exporter (fallback)
-        exporters.add(new DefaultExporter());
+        // Add default exporter with dependency injection
+        exporters.add(new DefaultExporter(services.getDriveService(), services.getCredential(), services.getRateLimiter()));
         
         return new ExporterRegistry(exporters);
     }
