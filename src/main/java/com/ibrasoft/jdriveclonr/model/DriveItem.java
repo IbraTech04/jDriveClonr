@@ -56,6 +56,13 @@ public class DriveItem {
         return toStringHelper(0);
     }
 
+    public void loadChildren() {
+        if (!this.isLoaded()){
+            List<DriveItem> loadedChildren = next != null ? next.get() : List.of();
+            this.setChildren(loadedChildren);
+        }
+    }
+
     private String toStringHelper(int indentAmount) {
         StringBuilder sb = new StringBuilder();
         sb.append("  ".repeat(Math.max(0, indentAmount)));

@@ -1,6 +1,8 @@
 package com.ibrasoft.jdriveclonr.ui;
 
 import com.ibrasoft.jdriveclonr.App;
+import com.ibrasoft.jdriveclonr.model.DriveDownloadTask;
+import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.FileFailure;
 import com.ibrasoft.jdriveclonr.service.DownloadService;
 import javafx.application.Platform;
@@ -78,8 +80,8 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
      * Constructor initializes the download service.
      */
     public DownloadController() {
-        this.service = new DownloadService();
-        this.service.setService(App.getDriveService());
+        this.service = new DownloadService(DriveContentController.getSelectedRoot());
+//        this.service.setService(App.getDriveService());
         this.filteredActiveTasks = new FilteredList<>(activeTasks, task -> task.getState() != Worker.State.SUCCEEDED && task.getState() != Worker.State.CANCELLED);
     }
 
@@ -168,67 +170,8 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
      */
     private void startDownload() {
         startTime = System.currentTimeMillis();
-        downloadTask = createDownloadTask();
-        setupDownloadTaskBindings();
-
-        Thread thread = new Thread(downloadTask, "Download-Coordinator");
-        thread.setDaemon(true);
-        thread.start();
-    }
-
-    /**
-     * Creates the main download task.
-     */
-    private Task<Void> createDownloadTask() {
-        return new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                updateMessage("Starting download...");
-                updateProgress(0, 1);
-
-                try {
-                    // TODO: Change this such that it calls ExporterRegistry
-                    service.downloadFile(
-                            DriveContentController.getSelectedRoot(),
-                            App.getConfigModel(),
-                            progress -> Platform.runLater(() -> {
-                                updateProgress(progress, 1);
-                                percentLabel.setText(percentFormat.format(progress));
-                            }),
-                            msg -> Platform.runLater(() -> {
-                                updateMessage(msg);
-                                statusMessage.set(msg);
-                                if (msg != null && msg.contains("Downloading")) {
-                                    int count = fileCount.incrementAndGet();
-                                    threadsCountLabel.setText(count + (count == 1 ? " file" : " files"));
-                                }
-                            }),
-                            task -> Platform.runLater(() -> {
-                                activeTasks.add(task);
-                                task.stateProperty().addListener((obs, old, newState) -> {
-                                    if (newState == Worker.State.SUCCEEDED ||
-                                            newState == Worker.State.FAILED ||
-                                            newState == Worker.State.CANCELLED) {
-                                        // Let progress reach 100% before removal
-                                    }
-                                });
-                            }), failure -> {
-                                // Store the failure and update UI
-                                failedFiles.add(failure);
-                                Platform.runLater(() -> addFailedFileToUI(failure));
-                            }
-                    );
-
-                    updateMessage("Download completed");
-                    updateProgress(1, 1);
-                    onDownloadComplete();
-                } catch (Exception e) {
-                    handleError("Error: " + e.getMessage());
-                    throw e;
-                }
-                return null;
-            }
-        };
+        // TODO: Invoke downloadService to start here
+        this.service.start();
     }
 
     private void addFailedFileToUI(FileFailure failure) {
@@ -564,20 +507,16 @@ public class DownloadController implements javafx.fxml.Initializable {    // FXM
         }
 
         private void updateCellContent(Task<?> task) {
-            // Reset bindings
             bar.progressProperty().unbind();
             bar.progressProperty().bind(task.progressProperty());
 
-            // Parse message for filename and status
-            String message = task.getMessage();
-            String[] parts = parseMessage(message);
-            String filename = parts[0];
-            String status = parts[1];
+            if (task instanceof DriveDownloadTask fileTask) {
+                DriveItem item = fileTask.getDriveItem();
+                nameLabel.setText(item.getName());
+                statusLabel.setText(task.getMessage());
+                // Could also show file size, etc.
+            }
 
-            nameLabel.setText(filename);
-            statusLabel.setText(status);
-
-            // Update percentage
             percentLabel.textProperty().unbind();
             percentLabel.textProperty().bind(
                     task.progressProperty().multiply(100).asString("%.1f%%")
