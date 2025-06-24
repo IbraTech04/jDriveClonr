@@ -32,7 +32,9 @@ public class DefaultExporter implements IDocumentExporter {
     
     private Drive driveService;
     private Credential credential;
-    private RateLimiter rateLimiter;    @Override
+    private RateLimiter rateLimiter;
+
+    @Override
     public boolean supports(DriveItem d, ExportFormat format) {
         // Return true because this is the "default" exporter - it supports everything
         return true;

@@ -77,9 +77,7 @@
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="threadsCountLabel" text="0 files" 
                        style="-fx-font-size: 14px; -fx-text-fill: #5F6368;"/>
-            </HBox>
-
-            <!-- Download List Container -->
+            </HBox>            <!-- Download List Container -->
             <StackPane VBox.vgrow="ALWAYS" 
                       style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #E8EAED; -fx-border-radius: 10; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);">
                 
@@ -98,7 +96,33 @@
                         <Label text="No active downloads" 
                                style="-fx-font-size: 14px; -fx-text-fill: #80868B;"/>
                     </VBox>
-                </StackPane>            </StackPane>
+                </StackPane>
+            </StackPane>
+            
+            <!-- Completed Downloads Section -->
+            <HBox fx:id="completedHeaderBox" alignment="CENTER_LEFT" spacing="8" visible="false">
+                <StackPane>
+                    <Rectangle width="24" height="24" arcWidth="4" arcHeight="4" 
+                               style="-fx-fill: #E8F5E8;"/>
+                    <Text text="✓" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-fill: #137333;"/>
+                </StackPane>
+                <Text text="Completed Downloads" 
+                      style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #137333;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="completedCountLabel" text="0 files" 
+                       style="-fx-font-size: 14px; -fx-text-fill: #137333;"/>
+            </HBox>
+
+            <!-- Completed Downloads Container -->
+            <StackPane VBox.vgrow="SOMETIMES" 
+                      style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #E8F5E8; -fx-border-radius: 10; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);"
+                      visible="false" fx:id="completedDownloadsPane">
+                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-border-color: transparent;" 
+                            maxHeight="200" VBox.vgrow="SOMETIMES">
+                    <ListView fx:id="completedList" 
+                             style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 8; -fx-background-radius: 10; -fx-border-radius: 10;"/>
+                </ScrollPane>
+            </StackPane>
             
             <!-- Failed Downloads Section -->
             <HBox fx:id="failedHeaderBox" alignment="CENTER_LEFT" spacing="8" visible="false">
@@ -112,19 +136,14 @@
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="failedCountLabel" text="0 files" 
                        style="-fx-font-size: 14px; -fx-text-fill: #D93025;"/>
-            </HBox>
-              <!-- Failed Downloads Container -->
+            </HBox>              <!-- Failed Downloads Container -->
             <StackPane VBox.vgrow="SOMETIMES" 
                   style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #FDEDED; -fx-border-radius: 10; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);"
                   visible="false" fx:id="failedDownloadsPane">
                 <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-border-color: transparent;" 
                             maxHeight="200" VBox.vgrow="SOMETIMES">
-                    <VBox fx:id="failedDownloadsContainer" spacing="10" visible="true">
-                        <padding>
-                            <Insets top="10" right="10" bottom="10" left="10"/>
-                        </padding>
-                        <!-- Failed downloads will be dynamically added here -->
-                    </VBox>
+                    <ListView fx:id="failedList"
+                             style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 8; -fx-background-radius: 10; -fx-border-radius: 10;"/>
                 </ScrollPane>
             </StackPane>
         </VBox>
