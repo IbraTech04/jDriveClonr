@@ -121,13 +121,6 @@ public class DefaultExporter implements IDocumentExporter {
         }
         String fullPath = normalizedPath + fileName;
         
-        // Debug logging
-        System.out.println("DEBUG: DefaultExporter.exportDocument called with:");
-        System.out.println("  - DriveItem: " + d.getName() + " (ID: " + d.getId() + ")");
-        System.out.println("  - FilePath: '" + filePath + "'");
-        System.out.println("  - Format: " + mime);
-        System.out.println("  - Full path will be: '" + fullPath + "'");
-        
         pc.updateProgress(0.0, 1.0, "Preparing to download: " + fileName);
         
         try (FileOutputStream target = new FileOutputStream(fullPath)) {

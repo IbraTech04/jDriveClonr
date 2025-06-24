@@ -102,9 +102,22 @@ public class DownloadController implements javafx.fxml.Initializable {
         completedCountLabel.setText("0 files");
         overallLabel.textProperty().bind(statusMessage);
 
-        // Style the progress bar
-        overallBar.setStyle("-fx-accent: #1967D2;");
-        overallBar.setProgress(0.0);
+        overallBar.setStyle(
+            "-fx-accent: #1967D2; " +
+            "-fx-control-inner-background: #E8EAED; " +
+            "-fx-progress-color: #1967D2; " +
+            "-fx-background-color: transparent;"
+        );
+
+        overallBar.setPrefHeight(12); // Increase from 6 to 12
+
+        overallBar.progressProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                overallBar.requestLayout();
+                overallBar.applyCss();
+            });
+        });
+
 
         // Set up visibility bindings for active downloads
         emptyStatePane.visibleProperty().bind(Bindings.isEmpty(downloadService.getDownloadTasks()));
@@ -121,15 +134,12 @@ public class DownloadController implements javafx.fxml.Initializable {
      * Configures the ListViews with custom cell factory for download items.
      */
     private void setupListView() {
-        // Set up active downloads list
         threadList.setItems(downloadService.getDownloadTasks());
         threadList.setCellFactory(lv -> new DownloadCell());
 
-        // Set up completed downloads list
         completedList.setItems(downloadService.getCompletedTasks());
         completedList.setCellFactory(lv -> new DownloadCell());
 
-        // Set up failed downloads list
         failedList.setItems(downloadService.getFailedTasks());
         failedList.setCellFactory(lv -> new DownloadCell());
     }
@@ -562,7 +572,7 @@ public class DownloadController implements javafx.fxml.Initializable {
                             if (task.getException() != null) {
                                 String errorMsg = task.getException().getMessage();
                                 if (errorMsg != null && !errorMsg.isEmpty()) {
-                                    status = "Failed: " + errorMsg;
+                                    status = "Cause: " + errorMsg;
                                 }
                             }
                         }

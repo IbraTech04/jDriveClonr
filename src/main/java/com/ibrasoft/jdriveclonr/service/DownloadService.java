@@ -14,12 +14,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.Future;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Multithreaded download service that splits work across multiple worker threads,
@@ -30,7 +30,8 @@ import java.util.ArrayList;
 public class DownloadService extends Service<Void> {
 
     private DriveItem rootItem;
-    private final ExecutorService executorService;    private final ObservableList<Task<?>> downloadTasks = FXCollections.observableArrayList();
+    private final ExecutorService executorService;
+    private final ObservableList<Task<?>> downloadTasks = FXCollections.observableArrayList();
     private final ObservableList<Task<?>> completedTasks = FXCollections.observableArrayList();
     private final ObservableList<Task<?>> failedTasks = FXCollections.observableArrayList();
     private ExporterRegistry exporterRegistry;
@@ -47,7 +48,7 @@ public class DownloadService extends Service<Void> {
                 App.getConfigModel().getThreadCount() > 0 ? App.getConfigModel().getThreadCount() : 4,
                 daemonThreadFactory
         );
-        
+
         // Initialize services and exporter registry
         try {
             GoogleServiceFactory.GoogleServices services = GoogleServiceFactory.createServices(ServiceRepository.getCredential());
@@ -60,26 +61,28 @@ public class DownloadService extends Service<Void> {
     @Override
     protected Task<Void> createTask() {
         return new DriveDownloadCoordinatorTask();
-    }    private class DriveDownloadCoordinatorTask extends Task<Void> {
+    }
+
+    private class DriveDownloadCoordinatorTask extends Task<Void> {
         private final List<Future<?>> submittedTasks = new ArrayList<>();
 
         @Override
         protected Void call() throws Exception {
             Platform.runLater(downloadTasks::clear);
-            
+
             // First, count all the tasks that will be created
             int totalTaskCount = countTasks(rootItem);
-            
+
             if (totalTaskCount == 0) {
                 updateMessage("No files to download");
                 return null;
             }
-            
+
             updateMessage("Starting download of " + totalTaskCount + " files...");
-            
+
             // Create and submit all download tasks
             recurseAndAddTasks(rootItem, App.getConfigModel().getDestinationDirectory());
-            
+
             // Wait for all tasks to complete
             try {
                 updateMessage("Waiting for all downloads to complete...");
@@ -100,13 +103,13 @@ public class DownloadService extends Service<Void> {
                 updateMessage("Download process encountered an error: " + e.getMessage());
                 throw e;
             }
-            
+
             return null;
         }
-        
+
         private int countTasks(DriveItem root) {
             int count = 0;
-            
+
             if (root.isFolder()) {
                 if (!root.isLoaded()) {
                     try {
@@ -116,16 +119,16 @@ public class DownloadService extends Service<Void> {
                         return 0;
                     }
                 }
-                
+
                 if (root.getChildren() != null && !root.getChildren().isEmpty()) {
                     for (DriveItem child : root.getChildren()) {
                         if (child == null) continue;
-                        
+
                         String childId = child.getId();
                         if ("loading".equals(childId) || "empty".equals(childId) || "error".equals(childId)) {
                             continue;
                         }
-                        
+
                         try {
                             count += countTasks(child);
                         } catch (Exception e) {
@@ -137,7 +140,7 @@ public class DownloadService extends Service<Void> {
                 // This is a file, so it will create one download task
                 count = 1;
             }
-            
+
             return count;
         }
 
@@ -145,25 +148,19 @@ public class DownloadService extends Service<Void> {
             if (root.isFolder()) {
                 // Create directory if it doesn't exist
                 if (!currPath.toFile().exists()) {
-                    System.out.println("Creating directory: " + currPath);
                     if (!currPath.toFile().mkdirs()) {
-                        System.err.println("Failed to create directory: " + currPath);
-                        return;
+                        throw new RuntimeException("Failed to create directory: " + currPath);
                     }
                 }
-                
+
                 if (!root.isLoaded()) {
                     try {
                         root.loadChildren();
-                        System.out.println("Loaded " + (root.getChildren() != null ? root.getChildren().size() : 0) 
-                                         + " children for folder: " + root.getName());
                     } catch (Exception e) {
-                        System.err.println("Failed to load children for folder '" + root.getName() + "': " + e.getMessage());
-                        e.printStackTrace();
-                        return;
+                        throw new RuntimeException("Failed to load children for folder '" + root.getName() + "': " + e.getMessage(), e);
                     }
                 }
-                
+
                 if (root.getChildren() != null && !root.getChildren().isEmpty()) {
                     for (DriveItem child : root.getChildren()) {
                         if (child == null) continue;
@@ -172,7 +169,7 @@ public class DownloadService extends Service<Void> {
                         if ("loading".equals(childId) || "empty".equals(childId) || "error".equals(childId)) {
                             continue;
                         }
-                        
+
                         try {
                             if (child.isFolder())
                                 recurseAndAddTasks(child, currPath.resolve(FileUtils.sanitizeFilename(child.getName())));
@@ -184,7 +181,8 @@ public class DownloadService extends Service<Void> {
                     }
                 } else {
                     System.out.println("Folder '" + root.getName() + "' has no children or children failed to load");
-                }            } else {
+                }
+            } else {
                 try {
                     DriveDownloadTask task = new DriveDownloadTask(root, currPath.toString(), exporterRegistry);
 

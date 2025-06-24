@@ -26,7 +26,9 @@ public class GoogleSlidesExporter implements IDocumentExporter {
 
     private final Slides slidesService;
     private final Credential credential;
-    final GoogleMime SUPPORTED_MIME = GoogleMime.SLIDES;    @Override
+    final GoogleMime SUPPORTED_MIME = GoogleMime.SLIDES;
+
+    @Override
     public void exportDocument(DriveItem d, String filePath, ExportFormat format, ProgressCallback pc) throws IOException, InterruptedException {
         // A) Create a folder with the current drive item name
         String sanitizedName = FileUtils.sanitizeFilename(d.getName());
@@ -34,7 +36,8 @@ public class GoogleSlidesExporter implements IDocumentExporter {
 
         if (!dest.mkdir()) {
             throw new IOException("Failed to create directory: " + filePath + File.separator + sanitizedName);
-        }try {
+        }
+        try {
             Presentation presentation = slidesService
                     .presentations()
                     .get(d.getId())
@@ -58,12 +61,12 @@ public class GoogleSlidesExporter implements IDocumentExporter {
                 String contentUrl = thumbnail.getContentUrl();
 
                 String slideName = String.format("Slide %02d", i + 1);
-                File outFile = new File(dest, slideName + ".png");                try (InputStream in = URI.create(contentUrl).toURL().openStream();
+                File outFile = new File(dest, slideName + ".png");
+                try (InputStream in = URI.create(contentUrl).toURL().openStream();
                      FileOutputStream output = new FileOutputStream(outFile)) {
                     in.transferTo(output);
                 }
 
-//                    Thread.sleep(500);
                 pc.updateProgress((i + 1 / (1.0 * slides.size())), 1.0, "Exporting slide: " + slide.getPageElements().get(0).getObjectId());
             }
         } catch (Exception e) {

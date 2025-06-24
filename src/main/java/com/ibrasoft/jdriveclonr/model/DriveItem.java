@@ -103,7 +103,6 @@ public class DriveItem {
         Task<List<DriveItem>> loadTask = new Task<>() {
             @Override
             protected List<DriveItem> call()  {
-                System.out.println("Loading children for: " + item.getId());
                 if (!item.getChildren().isEmpty())
                     return item.getChildren();
                 if (item.getNext() != null)

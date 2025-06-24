@@ -53,7 +53,7 @@ public enum ExportFormat {
         switch (googleMimeType) {
             case GoogleMime.DOCS -> list.addAll(List.of(DOCX, ODT, PDF, MARKDOWN, TXT, HTML, ZIPHTML, EPUB));
             case GoogleMime.SHEETS -> list.addAll(List.of(XLSX, ODS, PDF, CSV, TSV, HTML, ZIPHTML));
-            case GoogleMime.SLIDES -> list.addAll(List.of(PPTX, ODP, PDF, TXT));
+            case GoogleMime.SLIDES -> list.addAll(List.of(PPTX, ODP, PDF, PNG, TXT));
             case GoogleMime.DRAWINGS -> list.addAll(List.of(PNG, JPEG, SVG, PDF));
             case GoogleMime.JAMBOARD -> list.add(PDF);
         }
