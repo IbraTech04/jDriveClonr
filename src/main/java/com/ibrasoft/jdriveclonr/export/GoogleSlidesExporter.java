@@ -29,7 +29,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
     final GoogleMime SUPPORTED_MIME = GoogleMime.SLIDES;
 
     @Override
-    public void exportDocument(DriveItem d, String filePath, ExportFormat format, ProgressCallback pc) throws IOException, InterruptedException {
+    public void exportDocument(DriveItem d, String filePath, ExportFormat format, ProgressCallback pc) throws IOException {
         // A) Create a folder with the current drive item name
         String sanitizedName = FileUtils.sanitizeFilename(d.getName());
         File dest = new File(filePath, sanitizedName);
@@ -48,7 +48,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
             for (int i = 0; i < slides.size(); i++) {
                 Page slide = slides.get(i);
                 String pageId = slide.getObjectId();
-                pc.updateProgress((i / (1.0 * slides.size())), 1.0, "Exporting slide: " + slide.getPageElements().get(0).getObjectId());
+                pc.updateProgress((i / (1.0 * slides.size())), 1.0, "Exporting slide: " + slide.getPageElements().getFirst().getObjectId());
                 // Use Google Slides API to generate a PNG thumbnail
                 Thumbnail thumbnail = slidesService
                         .presentations()
@@ -67,7 +67,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
                     in.transferTo(output);
                 }
 
-                pc.updateProgress((i + 1 / (1.0 * slides.size())), 1.0, "Exporting slide: " + slide.getPageElements().get(0).getObjectId());
+                pc.updateProgress((i + 1 / (1.0 * slides.size())), 1.0, "Exporting slide: " + slide.getPageElements().getFirst().getObjectId());
             }
         } catch (Exception e) {
             throw new IOException("Failed to export slides: " + e.getMessage(), e);

@@ -43,10 +43,6 @@ public class DriveItem {
         this.children = children;
     }
 
-    public void clearChildren() {
-        children.clear();
-    }
-
     public boolean isFolder() {
         return "application/vnd.google-apps.folder".equalsIgnoreCase(mimeType) ||
                 "virtual/root".equalsIgnoreCase(mimeType);
@@ -57,7 +53,7 @@ public class DriveItem {
     }
 
     public void loadChildren() {
-        if (!this.isLoaded()){
+        if (this.isLoaded()){
             List<DriveItem> loadedChildren = next != null ? next.get() : List.of();
             this.setChildren(loadedChildren);
         }
@@ -151,7 +147,7 @@ public class DriveItem {
      * @return true if the children are loaded, false otherwise.
      */
     public boolean isLoaded(){
-        return children != null && !children.isEmpty() && !children.getFirst().getId().equals("loading");
+        return children == null || children.isEmpty() || children.getFirst().getId().equals("loading");
     }
 
 }

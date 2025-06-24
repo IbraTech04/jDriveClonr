@@ -62,8 +62,7 @@ public class DownloadController implements javafx.fxml.Initializable {
     private HBox completedHeaderBox;
     @FXML
     private Label completedCountLabel;
-    @FXML
-    private VBox failedDownloadsContainer;
+
     @FXML
     private StackPane failedDownloadsPane;
     @FXML

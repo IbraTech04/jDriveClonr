@@ -111,7 +111,7 @@ public class DownloadService extends Service<Void> {
             int count = 0;
 
             if (root.isFolder()) {
-                if (!root.isLoaded()) {
+                if (root.isLoaded()) {
                     try {
                         root.loadChildren();
                     } catch (Exception e) {
@@ -153,7 +153,7 @@ public class DownloadService extends Service<Void> {
                     }
                 }
 
-                if (!root.isLoaded()) {
+                if (root.isLoaded()) {
                     try {
                         root.loadChildren();
                     } catch (Exception e) {

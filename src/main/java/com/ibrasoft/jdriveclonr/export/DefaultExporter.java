@@ -163,11 +163,6 @@ public class DefaultExporter implements IDocumentExporter {
         }
     }
 
-    /**
-     * Static method for backward compatibility.
-     * @deprecated Use instance method with dependency injection instead
-     */
-    @Deprecated
     public static void downloadFromExportLinkInto(String token,
                                                   String link,
                                                   OutputStream target) throws IOException, InterruptedException {
