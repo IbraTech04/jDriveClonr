@@ -31,7 +31,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
     @Override
     public void exportDocument(DriveItem d, String filePath, ExportFormat format, ProgressCallback pc) throws IOException {
         // A) Create a folder with the current drive item name
-        String sanitizedName = FileUtils.sanitizeFilename(d.getName());
+        String sanitizedName = FileUtils.sanitizeFilename(d.getName() + " - " + d.getId().substring(0, 8));
         File dest = new File(filePath, sanitizedName);
 
         if (!dest.mkdir()) {

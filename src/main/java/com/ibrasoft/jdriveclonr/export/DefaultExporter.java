@@ -110,8 +110,12 @@ public class DefaultExporter implements IDocumentExporter {
         if (driveService == null || credential == null) {
             throw new IllegalStateException("DefaultExporter not properly initialized with dependencies");
         }
-          String fileID = d.getId();
-        String sanitizedName = FileUtils.sanitizeFilename(d.getName());
+        String fileID = d.getId();
+        String sanitizedName = FileUtils.sanitizeFilename(d.getName() + " - " + fileID.substring(0, 8));
+        if (mime == ExportFormat.DEFAULT) {
+            // Don't add file ID suffix for default export since those are guaranteed to be unique
+            sanitizedName = FileUtils.sanitizeFilename(d.getName());
+        }
         String fileName = sanitizedName + mime.getExtension();
         
         // Ensure proper path separator - filePath should end with separator
@@ -138,6 +142,7 @@ public class DefaultExporter implements IDocumentExporter {
                     downloadFromExportLinkInto(credential.getAccessToken(), downloadLink, target, pc, fileName);
                 }
             } else {
+                // Note: We don't need to worry about binary files colliding because Google Drive doesn't allow duplicate file names for binary files
                 pc.updateProgress(0.1, 1.0, "Downloading binary file: " + fileName);
                 try {
                     // Try direct download

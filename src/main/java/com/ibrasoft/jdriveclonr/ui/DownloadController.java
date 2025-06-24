@@ -326,7 +326,7 @@ public class DownloadController implements javafx.fxml.Initializable {
                         new KeyValue(
                                 animatedProgress,
                                 targetProgress,
-                                Interpolator.EASE_OUT
+                                Interpolator.EASE_BOTH
                         )
                 )
         );

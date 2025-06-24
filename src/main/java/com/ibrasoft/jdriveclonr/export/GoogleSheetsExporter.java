@@ -29,8 +29,9 @@ public class GoogleSheetsExporter implements IDocumentExporter {
         // A) Create a folder with the current driveitem name
         // B) Iterate over all sub-documents and export them one-by-one into the folder
 
-
-        File dest = new File(filePath, FileUtils.sanitizeFilename(d.getName()));
+        // add file id at the end to avoid conflicts with other files
+        // recall that google drive allows duplicate file names for google workspace documents
+        File dest = new File(filePath, FileUtils.sanitizeFilename(d.getName() + " - " + d.getId().substring(0, 8)));
 
         if (!dest.mkdir()) {
             throw new IOException("Failed to create directory: " + filePath + d.getName());

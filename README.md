@@ -2,7 +2,12 @@
 
 # jDriveClonr
 
+<div align="center">
+<img src="src/main/resources/DriveClonrLogo.png" alt="jDriveClonr Logo" width="200"/>
+</div>
+
 > A Java port of DriveClonrPro with enhanced features and performance!
+
 
 [![Java Version](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/technologies/downloads/)
 [![JavaFX Version](https://img.shields.io/badge/JavaFX-21-blue.svg)](https://openjfx.io/)
@@ -13,11 +18,6 @@
 New year, new project! Introducing **jDriveClonr**, the Java port of the original Python-based DriveClonrPro! This project delivers a more efficient and user-friendly alternative to the original, with a focus on performance, ease of use, and features!
 
 Even before implementing multithreading, jDriveClonr was already faster than the original DriveClonrPro! It also _finally_ supports the TreeView for selecting files and folders to clone, a long-awaited feature. jDriveClonr is designed to be modular and extensible, making it easier to add new features and improvements in the future.
-
-<div align="center">
-<img src="src/main/resources/DriveClonrLogo.png" alt="jDriveClonr Logo" width="200"/>
-</div>
-
 ## Features
 
 - **Configurable Multithreading** - A long-awaited feature! Customize thread count via UI slider for optimal performance (1-10 threads)
