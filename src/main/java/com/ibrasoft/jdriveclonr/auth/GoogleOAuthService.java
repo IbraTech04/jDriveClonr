@@ -27,7 +27,7 @@ public class GoogleOAuthService {
 
     private static final List<String> SCOPES = List.of(
             DriveScopes.DRIVE,
-            "https://www.googleapis.com/auth/photoslibrary.readonly",
+            "https://www.googleapis.com/auth/photoslibrary.readonly", // ugh, there wasn't an enum for this
             SheetsScopes.SPREADSHEETS,
             SlidesScopes.PRESENTATIONS
     );

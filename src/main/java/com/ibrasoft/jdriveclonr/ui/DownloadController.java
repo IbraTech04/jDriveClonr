@@ -3,8 +3,15 @@ package com.ibrasoft.jdriveclonr.ui;
 import com.ibrasoft.jdriveclonr.model.DriveDownloadTask;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.service.DownloadService;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Interpolator;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
@@ -17,6 +24,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -66,11 +74,14 @@ public class DownloadController implements javafx.fxml.Initializable {
     @FXML
     private StackPane failedDownloadsPane;
     @FXML
-    private StackPane completedDownloadsPane;    // Services and state
+    private StackPane completedDownloadsPane;
     private final DownloadService downloadService;
     private final DecimalFormat percentFormat = new DecimalFormat("0.0%");
     private final StringProperty statusMessage = new SimpleStringProperty("Preparing download...");
     private long startTime;
+
+    private final DoubleProperty animatedProgress = new SimpleDoubleProperty(0.0);
+    private Timeline progressAnimation;
 
     /**
      * Constructor initializes the download service.
@@ -83,11 +94,25 @@ public class DownloadController implements javafx.fxml.Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeUI();
+        setupSmoothProgress();
         setupListView();
         setupButtons();
         setupWindowHandlers();
         setupServiceListeners();
         startDownload();
+    }
+
+    private void setupSmoothProgress() {
+        overallBar.progressProperty().bind(animatedProgress);
+
+        overallBar.setStyle(
+                "-fx-accent: #1967D2; " +
+                        "-fx-control-inner-background: #E8EAED; " +
+                        "-fx-background-color: transparent; " +
+                        "-fx-background-radius: 3px; " +
+                        // This CSS transition makes the fill smoother
+                        "-fx-effect: dropshadow(gaussian, rgba(25, 103, 210, 0.3), 2, 0, 0, 0);"
+        );
     }
 
     /**
@@ -266,6 +291,52 @@ public class DownloadController implements javafx.fxml.Initializable {
     /**
      * Updates the overall progress display based on service state.
      */
+    private void animateProgressTo(double targetProgress) {
+        // Stop any existing animation
+        if (progressAnimation != null) {
+            progressAnimation.stop();
+        }
+
+        // Create smooth transition animation
+        progressAnimation = new Timeline(
+                new KeyFrame(
+                        Duration.millis(500), // 500ms animation duration
+                        new KeyValue(
+                                animatedProgress,
+                                targetProgress,
+                                Interpolator.EASE_OUT // Smooth easing
+                        )
+                )
+        );
+
+        progressAnimation.play();
+    }
+
+    /**
+     * Alternative: Faster animation for frequent updates
+     */
+    private void animateProgressToFast(double targetProgress) {
+        if (progressAnimation != null) {
+            progressAnimation.stop();
+        }
+
+        progressAnimation = new Timeline(
+                new KeyFrame(
+                        Duration.millis(200), // Shorter duration for frequent updates
+                        new KeyValue(
+                                animatedProgress,
+                                targetProgress,
+                                Interpolator.EASE_OUT
+                        )
+                )
+        );
+
+        progressAnimation.play();
+    }
+
+    /**
+     * Updated progress method with smooth animation
+     */
     private void updateProgress() {
         int activeTasks = downloadService.getDownloadTasks().size();
         int completedTasks = downloadService.getCompletedTasks().size();
@@ -274,17 +345,71 @@ public class DownloadController implements javafx.fxml.Initializable {
 
         if (totalTasks > 0) {
             double progress = (double) (completedTasks + failedTasks) / totalTasks;
-            overallBar.setProgress(progress);
+
+            // Use smooth animation instead of direct setting
+            animateProgressToFast(progress);
+
             percentLabel.setText(percentFormat.format(progress));
 
-            // Update status message for ongoing downloads
             if (completedTasks + failedTasks < totalTasks) {
                 statusMessage.set(String.format("Downloading... %d of %d files completed",
                         completedTasks + failedTasks, totalTasks));
             }
         } else {
-            // No tasks yet, show preparing state
-            overallBar.setProgress(0.0);
+            // Animate to 0 for preparing state
+            animateProgressToFast(0.0);
+            percentLabel.setText("0%");
+        }
+
+        // Update count labels
+        threadsCountLabel.setText(String.format("%d files", Math.max(0, activeTasks)));
+        completedCountLabel.setText(String.format("%d files", completedTasks));
+        failedCountLabel.setText(String.format("%d files", failedTasks));
+    }
+
+    /**
+     * Enhanced version with different animation speeds based on progress change
+     */
+    private void updateProgressWithSmartAnimation() {
+        int activeTasks = downloadService.getDownloadTasks().size();
+        int completedTasks = downloadService.getCompletedTasks().size();
+        int failedTasks = downloadService.getFailedTasks().size();
+        int totalTasks = activeTasks + completedTasks + failedTasks;
+
+        if (totalTasks > 0) {
+            double newProgress = (double) (completedTasks + failedTasks) / totalTasks;
+            double currentProgress = animatedProgress.get();
+            double progressDiff = Math.abs(newProgress - currentProgress);
+
+            // Use different animation speeds based on how much progress changed
+            if (progressDiff > 0.1) {
+                // Large jump - use longer animation
+                animateProgressTo(newProgress);
+            } else if (progressDiff > 0.01) {
+                // Small change - use shorter animation
+                animateProgressToFast(newProgress);
+            } else {
+                // Tiny change - animate very quickly
+                if (progressAnimation != null) {
+                    progressAnimation.stop();
+                }
+                progressAnimation = new Timeline(
+                        new KeyFrame(
+                                Duration.millis(100),
+                                new KeyValue(animatedProgress, newProgress, Interpolator.LINEAR)
+                        )
+                );
+                progressAnimation.play();
+            }
+
+            percentLabel.setText(percentFormat.format(newProgress));
+
+            if (completedTasks + failedTasks < totalTasks) {
+                statusMessage.set(String.format("Downloading... %d of %d files completed",
+                        completedTasks + failedTasks, totalTasks));
+            }
+        } else {
+            animateProgressToFast(0.0);
             percentLabel.setText("0%");
         }
 
