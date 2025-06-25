@@ -29,11 +29,11 @@ import java.util.concurrent.ThreadFactory;
 @EqualsAndHashCode(callSuper = false)
 public class DownloadService extends Service<Void> {
 
-    private DriveItem rootItem;
     private final ExecutorService executorService;
     private final ObservableList<Task<?>> downloadTasks = FXCollections.observableArrayList();
     private final ObservableList<Task<?>> completedTasks = FXCollections.observableArrayList();
     private final ObservableList<Task<?>> failedTasks = FXCollections.observableArrayList();
+    private DriveItem rootItem;
     private ExporterRegistry exporterRegistry;
 
     public DownloadService(DriveItem rootItem) {
@@ -44,10 +44,7 @@ public class DownloadService extends Service<Void> {
             return thread;
         };
 
-        this.executorService = Executors.newFixedThreadPool(
-                App.getConfigModel().getThreadCount() > 0 ? App.getConfigModel().getThreadCount() : 4,
-                daemonThreadFactory
-        );
+        this.executorService = Executors.newFixedThreadPool(App.getConfigModel().getThreadCount() > 0 ? App.getConfigModel().getThreadCount() : 4, daemonThreadFactory);
 
         // Initialize services and exporter registry
         try {
@@ -173,14 +170,11 @@ public class DownloadService extends Service<Void> {
                         try {
                             if (child.isFolder())
                                 recurseAndAddTasks(child, currPath.resolve(FileUtils.sanitizeFilename(child.getName())));
-                            else
-                                recurseAndAddTasks(child, currPath);
+                            else recurseAndAddTasks(child, currPath);
                         } catch (Exception e) {
                             System.err.println("Error processing child '" + child.getName() + "': " + e.getMessage());
                         }
                     }
-                } else {
-                    System.out.println("Folder '" + root.getName() + "' has no children or children failed to load");
                 }
             } else {
                 try {
@@ -201,7 +195,6 @@ public class DownloadService extends Service<Void> {
                     Future<?> future = executorService.submit(task);
                     submittedTasks.add(future);
 
-                    System.out.println("Started download task for: " + root.getName() + " at " + currPath + " for file type: " + root.getMimeType());
                 } catch (Exception e) {
                     System.err.println("Failed to create download task for '" + root.getName() + "': " + e.getMessage());
                 }

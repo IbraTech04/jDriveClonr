@@ -4,6 +4,7 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
+import com.google.common.util.concurrent.RateLimiter;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
@@ -22,6 +23,7 @@ public class GoogleSheetsExporter implements IDocumentExporter {
     private final Sheets sheetsService;
     private final Credential credential;
     final GoogleMime SUPPORTED_MIME = GoogleMime.SHEETS;
+    private RateLimiter rateLimiter;
 
     @Override
     public void exportDocument(DriveItem d, String filePath, ExportFormat format, ProgressCallback pc) throws IOException, InterruptedException {
@@ -42,7 +44,7 @@ public class GoogleSheetsExporter implements IDocumentExporter {
                 .execute();
 
         for (int i = 0; i < sheet.getSheets().size(); i++) {
-
+            rateLimiter.acquire();
             Sheet s = sheet.getSheets().get(i);
             String sheetName = s.getProperties().getTitle();
             sheetName = FileUtils.sanitizeFilename(sheetName);

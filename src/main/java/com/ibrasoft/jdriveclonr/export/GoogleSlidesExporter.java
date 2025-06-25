@@ -5,6 +5,7 @@ import com.google.api.services.slides.v1.Slides;
 import com.google.api.services.slides.v1.model.Page;
 import com.google.api.services.slides.v1.model.Presentation;
 import com.google.api.services.slides.v1.model.Thumbnail;
+import com.google.common.util.concurrent.RateLimiter;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
 import com.ibrasoft.jdriveclonr.model.ExportFormat;
 import com.ibrasoft.jdriveclonr.model.GoogleMime;
@@ -26,7 +27,9 @@ public class GoogleSlidesExporter implements IDocumentExporter {
 
     private final Slides slidesService;
     private final Credential credential;
+    private RateLimiter rateLimiter;
     final GoogleMime SUPPORTED_MIME = GoogleMime.SLIDES;
+
 
     @Override
     public void exportDocument(DriveItem d, String filePath, ExportFormat format, ProgressCallback pc) throws IOException {
@@ -47,6 +50,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
             List<Page> slides = presentation.getSlides();
 
             for (int i = 0; i < slides.size(); i++) {
+                rateLimiter.acquire();
                 Page slide = slides.get(i);
                 String pageId = slide.getObjectId();
                 pc.updateProgress((i / (1.0 * slides.size())), 1.0, "Exporting slide: " + slide.getPageElements().getFirst().getObjectId());
