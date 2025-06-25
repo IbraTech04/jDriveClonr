@@ -41,6 +41,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
             Presentation presentation = slidesService
                     .presentations()
                     .get(d.getId())
+                    .setFields("slides(objectId,pageElements)")
                     .execute();
 
             List<Page> slides = presentation.getSlides();

@@ -37,7 +37,9 @@ public class GoogleSheetsExporter implements IDocumentExporter {
             throw new IOException("Failed to create directory: " + filePath + d.getName());
         }
 
-        Spreadsheet sheet = sheetsService.spreadsheets().get(d.getId()).execute();
+        Spreadsheet sheet = sheetsService.spreadsheets().get(d.getId())
+                .setFields("sheets.properties.title,sheets.properties.sheetId")
+                .execute();
 
         for (int i = 0; i < sheet.getSheets().size(); i++) {
 
