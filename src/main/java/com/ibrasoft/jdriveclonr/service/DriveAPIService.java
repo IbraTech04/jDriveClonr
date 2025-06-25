@@ -1,23 +1,17 @@
 package com.ibrasoft.jdriveclonr.service;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
-import com.ibrasoft.jdriveclonr.model.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.mime.ExportFormat;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -30,11 +24,8 @@ import java.util.Map;
 
 public class DriveAPIService {
     private final Drive driveService;
-    private final Credential googleCreds;
-
 
     public DriveAPIService(Credential credential) throws GeneralSecurityException, IOException {
-        this.googleCreds = credential;
         this.driveService = ServiceRepository.getDriveService();
     }
 
@@ -235,109 +226,4 @@ public class DriveAPIService {
         }
         return driveItems;
     }
-
-
-    /**
-     * This method allows for pushing files into an arbitrary instance of {@link OutputStream}, allowing
-     * for streaming the file to a different location.
-     *
-     * @param d The DriveItem to download
-     * @param mime   The export format to use
-     * @param target The target output stream to write the file to
-     */
-    public void downloadInto(DriveItem d, ExportFormat mime, OutputStream target) throws IOException, InterruptedException {
-        String fileID = d.getId();
-
-        try {
-            if (mime != ExportFormat.DEFAULT) {
-                try {
-                    this.driveService.files().export(fileID, mime.getMimeType())
-                            .executeMediaAndDownloadTo(target);
-                } catch (IOException e) {
-                    // We have likely run into a scenario where the file is too big to be exported, therefore we must
-                    // Use the export links trick.
-                    String downloadLink = fetchExportLinksFromFileId(fileID, mime);
-                    downloadFromExportLinkInto(this.googleCreds.getAccessToken(), downloadLink, target);
-                }
-            } else {
-                try {
-                    this.driveService.files().get(fileID)
-                            .setSupportsAllDrives(true)
-                            .executeMediaAndDownloadTo(target);
-                } catch (com.google.api.client.http.HttpResponseException e) {
-                    // We have likely encountered a "schrodinger's file" scenario where the file is somehow both shared
-                    // and not shared with us => Use Binary Export Links trick
-
-                    String downloadLink = d.getBinaryURL();
-                    if (downloadLink != null) {
-                        downloadFromExportLinkInto(this.googleCreds.getAccessToken(), downloadLink, target);
-                    } else {
-                        throw new IOException("Unable to download file: " + e.getMessage());
-                    }
-
-                }
-            }
-        } catch (GoogleJsonResponseException e) {
-            System.err.println("Unable to move file: " + e.getDetails());
-            throw e;
-        }
-    }
-
-    /**
-     * Returns the export link for a given file ID and export format.
-     *
-     * @param fileId the ID of the file to export
-     * @param mime   the export format to use
-     * @return the export link for the file
-     * @throws IOException if the request fails or an I/O error occurs
-     */
-    public String fetchExportLinksFromFileId(String fileId, ExportFormat mime) throws IOException {
-        File file = driveService.files().get(fileId)
-                .setFields("exportLinks")
-                .execute();
-        Map<String, String> exportLinks = file.getExportLinks();
-        return exportLinks.get(mime.getMimeType());
-    }
-
-    public static void downloadFromExportLinkInto(String token,
-                                                  String link,
-                                                  OutputStream target) throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .connectTimeout(Duration.ofSeconds(15))
-                .build();
-
-        HttpRequest request = HttpRequest.newBuilder(URI.create(link))
-                .header("Authorization", "Bearer " + token)
-                .GET()
-                .build();
-
-        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-
-        if (response.statusCode() != 200) {
-            try (InputStream errStream = response.body()) {
-                String err = new String(errStream.readAllBytes(), StandardCharsets.UTF_8);
-                throw new IOException("Failed to download: HTTP " + response.statusCode() + " – " + err);
-            }
-        }
-
-        try (InputStream in = response.body()) {
-            in.transferTo(target);
-        }
-    }
-
-
-
-    /**
-     * Used to create a copy of the current running instance for Thread Safety, because the Google Drive API is *not*
-     * Thread-safe by default
-     *
-     * @return A new instance of DriveAPIService
-     * @throws GeneralSecurityException If the credentials are invalid or cannot be loaded
-     * @throws IOException If anything goes wrong with loading the credentials
-     */
-    public DriveAPIService createCopy() throws GeneralSecurityException, IOException {
-        return new DriveAPIService(this.googleCreds);
-    }
-
 }

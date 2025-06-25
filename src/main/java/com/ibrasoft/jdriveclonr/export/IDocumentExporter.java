@@ -1,10 +1,9 @@
 package com.ibrasoft.jdriveclonr.export;
 
 import com.ibrasoft.jdriveclonr.model.DriveItem;
-import com.ibrasoft.jdriveclonr.model.ExportFormat;
-import com.ibrasoft.jdriveclonr.model.GoogleMime;
+import com.ibrasoft.jdriveclonr.model.mime.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.mime.GoogleMime;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 public interface IDocumentExporter {

@@ -1,7 +1,7 @@
 package com.ibrasoft.jdriveclonr.export;
 
 import com.ibrasoft.jdriveclonr.model.DriveItem;
-import com.ibrasoft.jdriveclonr.model.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.mime.ExportFormat;
 import com.ibrasoft.jdriveclonr.service.GoogleServiceFactory;
 import lombok.AllArgsConstructor;
 

@@ -2,8 +2,8 @@ package com.ibrasoft.jdriveclonr.ui;
 
 import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.model.ConfigModel;
-import com.ibrasoft.jdriveclonr.model.ExportFormat;
-import com.ibrasoft.jdriveclonr.model.GoogleMime;
+import com.ibrasoft.jdriveclonr.model.mime.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.mime.GoogleMime;
 import com.ibrasoft.jdriveclonr.utils.FileUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

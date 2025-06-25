@@ -41,4 +41,6 @@ module com.ibrasoft.jdriveclonr {
     exports com.ibrasoft.jdriveclonr.service;
     exports com.ibrasoft.jdriveclonr.model;
     opens com.ibrasoft.jdriveclonr.model to javafx.fxml;
+    exports com.ibrasoft.jdriveclonr.model.mime;
+    opens com.ibrasoft.jdriveclonr.model.mime to javafx.fxml;
 }

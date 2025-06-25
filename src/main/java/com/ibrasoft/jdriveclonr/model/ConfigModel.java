@@ -1,5 +1,7 @@
 package com.ibrasoft.jdriveclonr.model;
 
+import com.ibrasoft.jdriveclonr.model.mime.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.mime.GoogleMime;
 import lombok.Data;
 import java.nio.file.Path;
 import java.util.HashMap;

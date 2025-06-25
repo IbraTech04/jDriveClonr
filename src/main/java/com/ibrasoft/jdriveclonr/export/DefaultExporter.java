@@ -6,7 +6,7 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.common.util.concurrent.RateLimiter;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
-import com.ibrasoft.jdriveclonr.model.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.mime.ExportFormat;
 import com.ibrasoft.jdriveclonr.utils.FileUtils;
 import com.ibrasoft.jdriveclonr.utils.ProgressTrackingOutputStream;
 import lombok.AllArgsConstructor;

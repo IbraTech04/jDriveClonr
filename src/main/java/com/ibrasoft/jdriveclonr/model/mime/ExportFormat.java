@@ -1,4 +1,4 @@
-package com.ibrasoft.jdriveclonr.model;
+package com.ibrasoft.jdriveclonr.model.mime;
 
 import lombok.Getter;
 
