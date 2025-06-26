@@ -72,7 +72,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
                     in.transferTo(output);
                 }
 
-                pc.updateProgress((i + 1 / (1.0 * slides.size())), 1.0, "Exporting slide: " + slide.getPageElements().getFirst().getObjectId());
+                pc.updateProgress(((i + 1) / (1.0 * slides.size())), 1.0, "Exporting slide: " + slide.getPageElements().getFirst().getObjectId());
             }
         } catch (Exception e) {
             throw new IOException("Failed to export slides: " + e.getMessage(), e);
