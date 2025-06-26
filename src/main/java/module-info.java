@@ -24,6 +24,7 @@ module com.ibrasoft.jdriveclonr {
     requires google.api.services.slides.v1.rev399;
     requires google.api.services.drive.v3.rev197;
     requires google.api.services.sheets.v4.rev614;
+    requires com.google.auth;
 
     opens com.ibrasoft.jdriveclonr to javafx.fxml;
     opens com.ibrasoft.jdriveclonr.ui to javafx.fxml;

@@ -76,7 +76,7 @@
         <dependency>
             <groupId>com.google.photos.library</groupId>
             <artifactId>google-photos-library-client</artifactId>
-            <version>1.7.3</version>
+            <version>1.7.2</version>
         </dependency>
 
         <dependency>
