@@ -63,7 +63,7 @@ public class GoogleSheetsExporter implements IDocumentExporter {
                         output
                 );
             }
-            pc.updateProgress((i + 1 / (1.0 * sheet.getSheets().size())), 1.0, "Exporting sheet: " + sheetName);
+            pc.updateProgress(((i + 1) / (1.0 * sheet.getSheets().size())), 1.0, "Exporting sheet: " + sheetName);
         }
     }
 
