@@ -23,7 +23,7 @@ Even before implementing multithreading, jDriveClonr was already faster than the
 - **Configurable Multithreading** - A long-awaited feature! Customize thread count via UI slider for optimal performance (1-10 threads)
 - **TreeView Navigation** - At long last, intuitive selection of files and folders to clone! 
 - **Shared Drive Support** - Full access to all your shared Google Drive content
-- **Google Photos Cloning** - Coming soon!
+- ~~**Google Photos Cloning** - Coming soon!~~ Google Photos cloning is no longer planned due to the changes in the Google Photos API.
 - **Lazy-loading** - For a faster, lag-free UI experience
 - **Improved Error Handling** - Better logging and error recovery
 - **Modern JavaFX UI** - Native interface with hDPI scaling support
