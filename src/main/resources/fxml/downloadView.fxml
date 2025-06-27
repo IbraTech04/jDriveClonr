@@ -8,144 +8,181 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.ibrasoft.jdriveclonr.ui.DownloadController"
-            prefWidth="700" prefHeight="550"
-            style="-fx-background-color: #F9FAFB;">
+            prefWidth="800" prefHeight="650"
+            minWidth="700" minHeight="550"
+            style="-fx-background-color: #F8F9FA;">
 
-        <!-- Top: Header Section -->
+    <!-- Top: Header Section -->
     <top>
-        <VBox spacing="5.0" BorderPane.alignment="CENTER" 
-              style="-fx-background-color: #FFFFFF; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);">
+        <VBox spacing="8.0" BorderPane.alignment="CENTER" 
+              style="-fx-background-color: #FFFFFF; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, 2);">
             <padding>
-                <Insets top="24" right="24" bottom="24" left="24"/>
+                <Insets top="28" right="32" bottom="24" left="32"/>
             </padding>
 
             <!-- Header Title Section -->
-            <HBox alignment="CENTER_LEFT" spacing="12">
+            <HBox alignment="CENTER_LEFT" spacing="16">
                 <StackPane>
-                    <Rectangle width="40" height="40" arcWidth="8" arcHeight="8" 
-                              style="-fx-fill: #E8F0FE;"/>
-                    <Text text="↓" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1967D2;"/>
+                    <Rectangle width="48" height="48" arcWidth="12" arcHeight="12" 
+                              style="-fx-fill: linear-gradient(to bottom, #E8F0FE, #D2E3FC);"/>
+                    <Text text="↓" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-fill: #1967D2;"/>
                 </StackPane>
-                <VBox spacing="4">
+                <VBox spacing="6">
                     <Text text="Downloading your Files..." 
-                          style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-fill: #202124;">
+                          style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-fill: #202124;">
                         <font>
-                            <Font name="System Bold" size="22.0" />
+                            <Font name="System Bold" size="24.0" />
                         </font>
                     </Text>
                     <Text text="This will take a while, hang tight!" 
-                          style="-fx-font-size: 14px; -fx-fill: #5F6368;"/>
+                          style="-fx-font-size: 15px; -fx-fill: #5F6368; -fx-font-weight: 500;"/>
                 </VBox>
             </HBox>
 
             <!-- Overall Progress Section -->
-            <VBox spacing="10.0" VBox.vgrow="NEVER">
+            <VBox spacing="12.0" VBox.vgrow="NEVER">
                 <padding>
-                    <Insets top="20"/>
+                    <Insets top="24"/>
                 </padding>
 
-                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <HBox spacing="12.0" alignment="CENTER_LEFT">
                     <Label fx:id="overallLabel" text="Preparing downloads…" 
-                           style="-fx-font-size: 14px; -fx-text-fill: #5F6368;"/>
+                           style="-fx-font-size: 15px; -fx-text-fill: #5F6368; -fx-font-weight: 500;"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Label fx:id="percentLabel" text="0%" 
-                           style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1967D2;"/>
+                           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1967D2;"/>
                 </HBox>
 
                 <StackPane>
-                    <ProgressBar fx:id="overallBar" prefWidth="640" prefHeight="6" 
-                                style="-fx-accent: #1967D2; -fx-background-color: #E8EAED;"/>
+                    <ProgressBar fx:id="overallBar" prefWidth="736" prefHeight="8" 
+                                style="-fx-accent: linear-gradient(to right, #1967D2, #4285F4); -fx-background-color: #E8EAED; -fx-background-radius: 4; -fx-accent-radius: 4;"/>
                 </StackPane>
             </VBox>
         </VBox>
-    </top>    <!-- Center: Downloads List Section -->
+    </top>
+
+    <!-- Center: Downloads List Section -->
     <center>
-        <VBox spacing="16" BorderPane.alignment="CENTER">
+        <VBox spacing="20" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
             <padding>
-                <Insets top="20" right="24" bottom="16" left="24"/>
+                <Insets top="24" right="32" bottom="20" left="32"/>
             </padding>
 
             <!-- Download List Header -->
-            <HBox alignment="CENTER_LEFT" spacing="8">
+            <HBox alignment="CENTER_LEFT" spacing="12">
                 <StackPane>
-                    <Rectangle width="24" height="24" arcWidth="4" arcHeight="4" 
-                              style="-fx-fill: #E8F0FE;"/>
-                    <Text text="▼" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-fill: #1967D2;"/>
+                    <Rectangle width="28" height="28" arcWidth="6" arcHeight="6" 
+                              style="-fx-fill: linear-gradient(to bottom, #E8F0FE, #D2E3FC);"/>
+                    <Text text="▼" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-fill: #1967D2;"/>
                 </StackPane>
                 <Text text="Active Downloads" 
-                      style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #202124;"/>
+                      style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-fill: #202124;"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="threadsCountLabel" text="0 files" 
-                       style="-fx-font-size: 14px; -fx-text-fill: #5F6368;"/>
+                       style="-fx-font-size: 15px; -fx-text-fill: #5F6368; -fx-font-weight: 500;"/>
             </HBox>
 
             <!-- Download List Container -->
-            <StackPane VBox.vgrow="ALWAYS" 
-                      style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #E8EAED; -fx-border-radius: 10; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);">
+            <StackPane VBox.vgrow="ALWAYS" minHeight="200" prefHeight="250"
+                      style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E8EAED; -fx-border-radius: 12; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);">
                 
                 <!-- Active Downloads List -->
-                <ListView fx:id="threadList" VBox.vgrow="ALWAYS"
-                         style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 8; -fx-background-radius: 10; -fx-border-radius: 10;"/>
+                <ListView fx:id="threadList"
+                         style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 12; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cell-size: 56;"/>
 
                 <!-- Empty State -->
                 <StackPane fx:id="emptyStatePane" visible="false">
-                    <VBox alignment="CENTER" spacing="12">
+                    <VBox alignment="CENTER" spacing="16">
                         <StackPane>
-                            <Rectangle width="64" height="64" arcWidth="16" arcHeight="16" 
-                                      style="-fx-fill: #F8F9FA;"/>
-                            <Text text="↓" style="-fx-font-size: 24px; -fx-fill: #80868B;"/>
+                            <Rectangle width="80" height="80" arcWidth="20" arcHeight="20" 
+                                      style="-fx-fill: linear-gradient(to bottom, #F8F9FA, #E8EAED);"/>
+                            <Text text="↓" style="-fx-font-size: 32px; -fx-fill: #80868B;"/>
                         </StackPane>
-                        <Label text="No active downloads" 
-                               style="-fx-font-size: 14px; -fx-text-fill: #80868B;"/>
+                        <VBox alignment="CENTER" spacing="4">
+                            <Label text="No active downloads" 
+                                   style="-fx-font-size: 16px; -fx-text-fill: #80868B; -fx-font-weight: 500;"/>
+                            <Label text="Downloads will appear here when they start" 
+                                   style="-fx-font-size: 13px; -fx-text-fill: #9AA0A6;"/>
+                        </VBox>
                     </VBox>
-                </StackPane>            </StackPane>
+                </StackPane>
+            </StackPane>
+            
+            <!-- Completed Downloads Section -->
+            <HBox fx:id="completedHeaderBox" alignment="CENTER_LEFT" spacing="12" visible="false" managed="false">
+                <StackPane>
+                    <Rectangle width="28" height="28" arcWidth="6" arcHeight="6" 
+                               style="-fx-fill: linear-gradient(to bottom, #E8F5E8, #CEEAD6);"/>
+                    <Text text="✓" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-fill: #137333;"/>
+                </StackPane>
+                <Text text="Completed Downloads" 
+                      style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-fill: #137333;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="completedCountLabel" text="0 files" 
+                       style="-fx-font-size: 15px; -fx-text-fill: #137333; -fx-font-weight: 500;"/>
+            </HBox>
+
+            <!-- Completed Downloads Container -->
+            <StackPane VBox.vgrow="SOMETIMES" minHeight="120" prefHeight="160"
+                      style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E8F5E8; -fx-border-radius: 12; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);"
+                      visible="false" managed="false" fx:id="completedDownloadsPane">
+                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-background-radius: 12;">
+                    <ListView fx:id="completedList" 
+                             style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 12; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cell-size: 48;"/>
+                </ScrollPane>
+            </StackPane>
             
             <!-- Failed Downloads Section -->
-            <HBox fx:id="failedHeaderBox" alignment="CENTER_LEFT" spacing="8" visible="false">
+            <HBox fx:id="failedHeaderBox" alignment="CENTER_LEFT" spacing="12" visible="false" managed="false">
                 <StackPane>
-                    <Rectangle width="24" height="24" arcWidth="4" arcHeight="4" 
-                               style="-fx-fill: #FDEDED;"/>
-                    <Text text="⚠" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-fill: #D93025;"/>
+                    <Rectangle width="28" height="28" arcWidth="6" arcHeight="6" 
+                               style="-fx-fill: linear-gradient(to bottom, #FDEDED, #FAD2CF);"/>
+                    <Text text="⚠" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-fill: #D93025;"/>
                 </StackPane>
                 <Text text="Failed Downloads" 
-                      style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #D93025;"/>
+                      style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-fill: #D93025;"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="failedCountLabel" text="0 files" 
-                       style="-fx-font-size: 14px; -fx-text-fill: #D93025;"/>
+                       style="-fx-font-size: 15px; -fx-text-fill: #D93025; -fx-font-weight: 500;"/>
             </HBox>
-              <!-- Failed Downloads Container -->
-            <StackPane VBox.vgrow="SOMETIMES" 
-                  style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #FDEDED; -fx-border-radius: 10; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);"
-                  visible="false" fx:id="failedDownloadsPane">
-                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-border-color: transparent;" 
-                            maxHeight="200" VBox.vgrow="SOMETIMES">
-                    <VBox fx:id="failedDownloadsContainer" spacing="10" visible="true">
-                        <padding>
-                            <Insets top="10" right="10" bottom="10" left="10"/>
-                        </padding>
-                        <!-- Failed downloads will be dynamically added here -->
-                    </VBox>
+
+            <!-- Failed Downloads Container -->
+            <StackPane VBox.vgrow="SOMETIMES" minHeight="120" prefHeight="160"
+                      style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #FDEDED; -fx-border-radius: 12; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);"
+                      visible="false" managed="false" fx:id="failedDownloadsPane">
+                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-background-radius: 12;">
+                    <ListView fx:id="failedList"
+                             style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 12; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cell-size: 48;"/>
                 </ScrollPane>
             </StackPane>
         </VBox>
-    </center>    <!-- Bottom: Action Buttons -->
+    </center>
+
+    <!-- Bottom: Action Buttons -->
     <bottom>
-        <HBox spacing="12.0" alignment="CENTER_RIGHT" 
-              style="-fx-background-color: #FFFFFF; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, -2); -fx-border-color: #E8EAED; -fx-border-width: 1 0 0 0;">
+        <HBox spacing="16.0" alignment="CENTER_RIGHT" 
+              style="-fx-background-color: #FFFFFF; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, -2); -fx-border-color: #E8EAED; -fx-border-width: 1 0 0 0;">
             <padding>
-                <Insets top="16" right="24" bottom="16" left="24"/>
+                <Insets top="20" right="32" bottom="20" left="32"/>
             </padding>
 
-            <HBox spacing="8" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+            <HBox spacing="12" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                <StackPane>
+                    <Rectangle width="20" height="20" arcWidth="4" arcHeight="4" 
+                              style="-fx-fill: #E8EAED;"/>
+                    <Text text="i" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-fill: #5F6368;"/>
+                </StackPane>
                 <Label text="Download Service v1.0" 
-                       style="-fx-font-size: 12px; -fx-text-fill: #80868B;"/>
+                       style="-fx-font-size: 13px; -fx-text-fill: #80868B; -fx-font-weight: 500;"/>
             </HBox>
 
             <Button fx:id="cancelBtn" text="Cancel Download" onAction="#cancelDownload"
-                    style="-fx-background-color: #F1F3F4; -fx-text-fill: #5F6368; -fx-font-size: 13px; -fx-padding: 10 16; -fx-background-radius: 6; -fx-cursor: hand;"/>
+                    prefWidth="140" prefHeight="40"
+                    style="-fx-background-color: #F8F9FA; -fx-text-fill: #5F6368; -fx-font-size: 14px; -fx-padding: 12 20; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-weight: 500; -fx-border-color: #E8EAED; -fx-border-width: 1; -fx-border-radius: 8;"/>
 
             <Button fx:id="closeBtn" text="Close" onAction="#closeWindow"
-                    style="-fx-background-color: #1967D2; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 10 16; -fx-background-radius: 6; -fx-font-weight: bold; -fx-cursor: hand;"/>
+                    prefWidth="100" prefHeight="40"
+                    style="-fx-background-color: linear-gradient(to bottom, #1967D2, #1557B7); -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 12 20; -fx-background-radius: 8; -fx-font-weight: bold; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(25,103,210,0.3), 4, 0, 0, 2);"/>
         </HBox>
     </bottom>
 

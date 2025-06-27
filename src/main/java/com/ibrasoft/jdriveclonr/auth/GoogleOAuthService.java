@@ -8,7 +8,10 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.slides.v1.SlidesScopes;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +27,14 @@ public class GoogleOAuthService {
 
     private static final List<String> SCOPES = List.of(
             DriveScopes.DRIVE,
-            "https://www.googleapis.com/auth/photoslibrary.readonly"
+            "https://www.googleapis.com/auth/photoslibrary.readonly", // ugh, there wasn't an enum for this
+            SheetsScopes.SPREADSHEETS,
+            SlidesScopes.PRESENTATIONS
     );
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
     @Setter
-    private static String credentialsFilePath = "credentials.json"; // Default path in current directory
+    private static String credentialsFilePath = "credentials.json";
 
     public static Credential authorize() throws IOException, GeneralSecurityException {
         logger.info("Authorizing user");
@@ -44,6 +49,7 @@ public class GoogleOAuthService {
             GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(), JSON_FACTORY, clientSecrets, SCOPES)
                     .setAccessType("offline")
+                    .setDataStoreFactory(new FileDataStoreFactory(new java.io.File("tokens")))
                     .build();
 
             return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");

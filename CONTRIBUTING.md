@@ -9,7 +9,7 @@ Please be respectful and considerate of others when participating in this projec
 ## Getting Started
 
 1. Fork the repository
-2. Clone your fork locally: `git clone https://github.com/your-username/jDriveClonr.git`
+2. Clone your fork locally: `git clone https://github.com/IbraTech04/jDriveClonr.git`
 3. Set up the development environment as described in the [README.md](README.md)
 4. Create a new branch for your changes: `git checkout -b feature/your-feature-name`
 
@@ -88,7 +88,7 @@ See [TESTING.md](TESTING.md) for detailed testing guidelines.
 
 ## Community
 
-- Join the discussion on [GitHub Discussions](https://github.com/username/jDriveClonr/discussions)
+- Join the discussion on [GitHub Discussions](https://github.com/IbraTech04/jDriveClonr/discussions)
 - Help others who have questions
 - Share your successful use cases
 

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -34,26 +35,40 @@ public class DriveItem {
         logger.info("DriveItem instance created");
     }
 
+    public DateTime getModifiedTime() {
+        if (this.modifiedTime != null) {
+            return this.modifiedTime;
+        }
+        // Find the latest date among children if available
+        if (this.isLoaded()) {
+            return children.stream()
+                    .map(DriveItem::getModifiedTime)
+                    .filter(Objects::nonNull)
+                    .max(Comparator.comparingLong(DateTime::getValue))
+                    .orElse(null);
+        }
+        return null; // No modified time available
+    }
+
     public void setChildren(List<DriveItem> children) {
         // sort children based on type and name
-        children = children.stream()
-                .sorted(Comparator.comparing(DriveItem::isFolder).reversed()
-                        .thenComparing(DriveItem::getName))
-                .collect(Collectors.toList());
+        children = children.stream().sorted(Comparator.comparing(DriveItem::isFolder).reversed().thenComparing(DriveItem::getName)).collect(Collectors.toList());
         this.children = children;
     }
 
-    public void clearChildren() {
-        children.clear();
-    }
-
     public boolean isFolder() {
-        return "application/vnd.google-apps.folder".equalsIgnoreCase(mimeType) ||
-                "virtual/root".equalsIgnoreCase(mimeType);
+        return "application/vnd.google-apps.folder".equalsIgnoreCase(mimeType) || "virtual/root".equalsIgnoreCase(mimeType);
     }
 
     public String toString() {
         return toStringHelper(0);
+    }
+
+    public void loadChildren() {
+        if (!this.isLoaded()) {
+            List<DriveItem> loadedChildren = next != null ? next.get() : List.of();
+            this.setChildren(loadedChildren);
+        }
     }
 
     private String toStringHelper(int indentAmount) {
@@ -95,12 +110,9 @@ public class DriveItem {
     private void loadChildrenAsync(CheckBoxTreeItem<DriveItem> parent, DriveItem item) {
         Task<List<DriveItem>> loadTask = new Task<>() {
             @Override
-            protected List<DriveItem> call()  {
-                System.out.println("Loading children for: " + item.getId());
-                if (!item.getChildren().isEmpty())
-                    return item.getChildren();
-                if (item.getNext() != null)
-                    return item.getNext().get();
+            protected List<DriveItem> call() {
+                if (!item.getChildren().isEmpty()) return item.getChildren();
+                if (item.getNext() != null) return item.getNext().get();
                 return List.of(new DriveItem("empty", "No items", "", 0, null, false, List.of(), null, null));
             }
         };
@@ -116,10 +128,7 @@ public class DriveItem {
                 return;
             }
             // sort children based on type and name
-            children = children.stream()
-                    .sorted(Comparator.comparing(DriveItem::isFolder).reversed()
-                            .thenComparing(DriveItem::getName))
-                    .toList();
+            children = children.stream().sorted(Comparator.comparing(DriveItem::isFolder).reversed().thenComparing(DriveItem::getName)).toList();
             for (DriveItem child : children) {
                 parent.getChildren().add(child.toLazyTreeItem());
             }
@@ -142,10 +151,11 @@ public class DriveItem {
 
     /**
      * Checks if the DriveItem's children have been fully loaded, or if they are still lazy-loaded.
+     *
      * @return true if the children are loaded, false otherwise.
      */
-    public boolean isLoaded(){
-        return children != null && !children.isEmpty() && !children.getFirst().getId().equals("loading");
+    public boolean isLoaded() {
+        return !(children == null || children.isEmpty() || children.getFirst().getId().equalsIgnoreCase("loading"));
     }
 
 }

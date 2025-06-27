@@ -2,7 +2,12 @@
 
 # jDriveClonr
 
+<div align="center">
+<img src="src/main/resources/DriveClonrLogo.png" alt="jDriveClonr Logo" width="200"/>
+</div>
+
 > A Java port of DriveClonrPro with enhanced features and performance!
+
 
 [![Java Version](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/technologies/downloads/)
 [![JavaFX Version](https://img.shields.io/badge/JavaFX-21-blue.svg)](https://openjfx.io/)
@@ -13,17 +18,12 @@
 New year, new project! Introducing **jDriveClonr**, the Java port of the original Python-based DriveClonrPro! This project delivers a more efficient and user-friendly alternative to the original, with a focus on performance, ease of use, and features!
 
 Even before implementing multithreading, jDriveClonr was already faster than the original DriveClonrPro! It also _finally_ supports the TreeView for selecting files and folders to clone, a long-awaited feature. jDriveClonr is designed to be modular and extensible, making it easier to add new features and improvements in the future.
-
-<div align="center">
-<img src="src/main/resources/DriveClonrLogo.png" alt="jDriveClonr Logo" width="200"/>
-</div>
-
 ## Features
 
 - **Configurable Multithreading** - A long-awaited feature! Customize thread count via UI slider for optimal performance (1-10 threads)
 - **TreeView Navigation** - At long last, intuitive selection of files and folders to clone! 
 - **Shared Drive Support** - Full access to all your shared Google Drive content
-- **Google Photos Cloning** - Coming soon!
+- ~~**Google Photos Cloning** - Coming soon!~~ Google Photos cloning is no longer planned due to the changes in the Google Photos API.
 - **Lazy-loading** - For a faster, lag-free UI experience
 - **Improved Error Handling** - Better logging and error recovery
 - **Modern JavaFX UI** - Native interface with hDPI scaling support
@@ -87,6 +87,11 @@ jDriveClonr now features a thread count slider in the configuration screen that 
 > **Best Practice:** It is recommended to use 4-5 threads for optimal performance. Using more than 5 threads may result in rate-limiting by Google's API and other unpredictable behavior. The application will display a warning when selecting more than 5 threads.
 
 ## ❓ FAQ
+
+<details>
+<summary><b>Why is the jDriveClonr progress-bar unstable?</b></summary>
+<p>jDriveClonr uses lazy-loading to improve performance and decrease memory usage. In simple terms, jDriveClonr is discovering the files as it clones them; it does not know how many files there are to clone until it's done cloning. This means that the progress bar will not be accurate until the cloning is complete. There is unfortunately no solution to this that maintains performance or speed :(</p>
+</details>
 
 <details>
 <summary><b>What happened to the 'e' in Clon(e)r?</b></summary>

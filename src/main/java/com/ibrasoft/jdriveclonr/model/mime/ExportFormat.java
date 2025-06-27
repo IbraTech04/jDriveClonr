@@ -1,4 +1,4 @@
-package com.ibrasoft.jdriveclonr.model;
+package com.ibrasoft.jdriveclonr.model.mime;
 
 import lombok.Getter;
 
@@ -14,13 +14,13 @@ public enum ExportFormat {
     ODS("Open Document Spreadsheet (.ods)", "application/vnd.oasis.opendocument.spreadsheet", ".ods"),
     ODP("Open Document Presentation (.odp)", "application/vnd.oasis.opendocument.presentation", ".odp"),
     PDF("PDF (.pdf)", "application/pdf", ".pdf"),
-    PNG("PNG Image (.png)", "image/png", ".png"),
-    JPEG("JPEG Image (.jpg)", "image/jpeg", ".jpg"),
-    SVG("SVG Vector (.svg)", "image/svg+xml", ".svg"),
+    PNG("PNG Image (.png)", "image/png", ".png", "png"),
+    JPEG("JPEG Image (.jpg)", "image/jpeg", ".jpg", "jpeg"),
+    SVG("SVG Vector (.svg)", "image/svg+xml", ".svg", "svg"),
     TXT("Plain Text (.txt)", "text/plain", ".txt"),
     HTML("HTML (.html)", "text/html", ".html"),
-    CSV("CSV (.csv)", "text/csv", ".csv"),
-    TSV("TSV (.tsv)", "text/tab-separated-values", ".tsv"),
+    CSV("CSV (.csv)", "text/csv", ".csv", "csv"),
+    TSV("TSV (.tsv)", "text/tab-separated-values", ".tsv", "tsv"),
     MARKDOWN("Markdown (.md)", "text/markdown", ".md"),
     ZIPHTML("Zipped HTML Archive (.zip)", "application/zip", ".zip"),
     EPUB("EPUB (.epub)", "application/epub+zip", ".epub"),
@@ -28,11 +28,17 @@ public enum ExportFormat {
     private final String uiLabel;
     private final String mimeType;
     private final String extension;
+    private final String shortMime;
 
     ExportFormat(String uiLabel, String mimeType, String extension) {
+        this(uiLabel, mimeType, extension, mimeType);
+    }
+
+    ExportFormat(String uiLabel, String mimeType, String extension, String shortMime) {
         this.uiLabel = uiLabel;
         this.mimeType = mimeType;
         this.extension = extension;
+        this.shortMime = shortMime;
     }
 
     public static ExportFormat fromUiLabel(String label) {
@@ -42,12 +48,12 @@ public enum ExportFormat {
         return null;
     }
 
-    public static List<ExportFormat> getFormatsForGoogleMime(String googleMimeType) {
+    public static List<ExportFormat> getFormatsForGoogleMime(GoogleMime googleMimeType) {
         List<ExportFormat> list = new ArrayList<>();
         switch (googleMimeType) {
             case GoogleMime.DOCS -> list.addAll(List.of(DOCX, ODT, PDF, MARKDOWN, TXT, HTML, ZIPHTML, EPUB));
             case GoogleMime.SHEETS -> list.addAll(List.of(XLSX, ODS, PDF, CSV, TSV, HTML, ZIPHTML));
-            case GoogleMime.SLIDES -> list.addAll(List.of(PPTX, ODP, PDF, TXT));
+            case GoogleMime.SLIDES -> list.addAll(List.of(PPTX, ODP, PDF, PNG, TXT));
             case GoogleMime.DRAWINGS -> list.addAll(List.of(PNG, JPEG, SVG, PDF));
             case GoogleMime.JAMBOARD -> list.add(PDF);
         }
@@ -61,5 +67,17 @@ public enum ExportFormat {
             }
         }
         return "";
+    }
+
+    /**
+     * Returns whether the provided ExportFormat results in data loss for multi-sub-document files.
+     *
+     * @return True if the format is primitive (e.g., CSV, JPG, PNG), false otherwise
+     */
+    public boolean isPrimitive() {
+        return switch (this) {
+            case CSV, TSV, PNG, JPEG, SVG -> true;
+            default -> false;
+        };
     }
 }

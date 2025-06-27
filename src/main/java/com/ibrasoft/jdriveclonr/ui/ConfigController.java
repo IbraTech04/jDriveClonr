@@ -2,8 +2,8 @@ package com.ibrasoft.jdriveclonr.ui;
 
 import com.ibrasoft.jdriveclonr.App;
 import com.ibrasoft.jdriveclonr.model.ConfigModel;
-import com.ibrasoft.jdriveclonr.model.ExportFormat;
-import com.ibrasoft.jdriveclonr.model.GoogleMime;
+import com.ibrasoft.jdriveclonr.model.mime.ExportFormat;
+import com.ibrasoft.jdriveclonr.model.mime.GoogleMime;
 import com.ibrasoft.jdriveclonr.utils.FileUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -31,7 +31,8 @@ public class ConfigController implements Initializable {
     @FXML private Button helpButton;
     @FXML private Slider threadCountSlider;
     @FXML private Label threadCountLabel;
-    @FXML private Label threadWarningLabel;    @Override
+    @FXML private Label threadWarningLabel;
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
         ConfigModel config = App.getConfigModel();
 
@@ -43,11 +44,11 @@ public class ConfigController implements Initializable {
         jamboardFormatBox.getItems().addAll(ExportFormat.getFormatsForGoogleMime(GoogleMime.JAMBOARD));
 
         // Set default values from config
-        docsFormatBox.setValue(config.getExportFormat(GoogleMime.DOCS));
-        sheetsFormatBox.setValue(config.getExportFormat(GoogleMime.SHEETS));
-        slidesFormatBox.setValue(config.getExportFormat(GoogleMime.SLIDES));
-        drawingsFormatBox.setValue(config.getExportFormat(GoogleMime.DRAWINGS));
-        jamboardFormatBox.setValue(config.getExportFormat(GoogleMime.JAMBOARD));
+        docsFormatBox.setValue(config.getExportFormat(GoogleMime.DOCS.getMimeType()));
+        sheetsFormatBox.setValue(config.getExportFormat(GoogleMime.SHEETS.getMimeType()));
+        slidesFormatBox.setValue(config.getExportFormat(GoogleMime.SLIDES.getMimeType()));
+        drawingsFormatBox.setValue(config.getExportFormat(GoogleMime.DRAWINGS.getMimeType()));
+        jamboardFormatBox.setValue(config.getExportFormat(GoogleMime.JAMBOARD.getMimeType()));
         
         // Setup thread count slider
         threadCountSlider.setValue(config.getThreadCount());
@@ -191,11 +192,11 @@ public class ConfigController implements Initializable {
         }
     }    private void updateConfigModel() {
         ConfigModel config = App.getConfigModel();
-        config.setExportFormat(GoogleMime.DOCS, docsFormatBox.getValue());
-        config.setExportFormat(GoogleMime.SHEETS, sheetsFormatBox.getValue());
-        config.setExportFormat(GoogleMime.SLIDES, slidesFormatBox.getValue());
-        config.setExportFormat(GoogleMime.DRAWINGS, drawingsFormatBox.getValue());
-        config.setExportFormat(GoogleMime.JAMBOARD, jamboardFormatBox.getValue());
+        config.setExportFormat(GoogleMime.DOCS.getMimeType(), docsFormatBox.getValue());
+        config.setExportFormat(GoogleMime.SHEETS.getMimeType(), sheetsFormatBox.getValue());
+        config.setExportFormat(GoogleMime.SLIDES.getMimeType(), slidesFormatBox.getValue());
+        config.setExportFormat(GoogleMime.DRAWINGS.getMimeType(), drawingsFormatBox.getValue());
+        config.setExportFormat(GoogleMime.JAMBOARD.getMimeType(), jamboardFormatBox.getValue());
         config.setThreadCount((int) threadCountSlider.getValue());
     }
 
