@@ -13,6 +13,7 @@ import javafx.concurrent.Task;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +79,9 @@ public class DownloadService extends Service<Void> {
         @Override
         protected Void call() throws Exception {
             Platform.runLater(downloadTasks::clear);
-
+            // folder name with current date + time
+            String destFolderName = "DriveClonr - " + FileUtils.getCurrentDateTimeFormatted();
+            App.getConfigModel().setDestinationDirectory(new File(App.getConfigModel().getDestinationDirectory().toFile(), destFolderName).toPath());
             updateMessage("Starting download discovery and processing...");
 
             // Start discovery and downloading concurrently
