@@ -61,6 +61,14 @@ public class DownloadService extends Service<Void> {
         return new DriveDownloadCoordinatorTask();
     }
 
+    @Override
+    public boolean cancel() {
+        super.cancel();
+        executorService.shutdownNow();
+//        throw new RuntimeException("Download cancelled by user");
+        return false;
+    }
+
     private class DriveDownloadCoordinatorTask extends Task<Void> {
         private final List<Future<?>> submittedTasks = new ArrayList<>();
         private final AtomicInteger totalTasksDiscovered = new AtomicInteger(0);
