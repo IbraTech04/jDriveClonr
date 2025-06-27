@@ -142,7 +142,8 @@ public class DriveAPIService {
 
         DriveItem virtualRoot = new DriveItem(
                 "virtual-shared-root", "Shared Drives", "virtual/root",
-                0, null, false, new ArrayList<>(), null, null);
+                0, null, false, new ArrayList<>(),
+                () -> convertDrivesToDriveItems(drives), null);
 
         for (com.google.api.services.drive.model.Drive drive : drives) {
             DriveItem sharedDriveItem = new DriveItem(
@@ -161,7 +162,8 @@ public class DriveAPIService {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                    }, null);
+                    },
+                    null);
 
             virtualRoot.getChildren().add(sharedDriveItem);
         }
@@ -192,6 +194,31 @@ public class DriveAPIService {
         virtualRoot.setChildren(convertFileToDriveItems(files));
 
         return virtualRoot;
+    }
+
+    public List<DriveItem> convertDrivesToDriveItems(List<com.google.api.services.drive.model.Drive> drives) {
+        List<DriveItem> driveItems = new ArrayList<>();
+        for (com.google.api.services.drive.model.Drive drive : drives) {
+            DriveItem driveItem = new DriveItem(
+                    drive.getId(),
+                    drive.getName(),
+                    "virtual/root",
+                    0,
+                    null,
+                    true,
+                    new ArrayList<>(),
+                    () -> {
+                        try {
+                            return convertFileToDriveItems(fetchFilesInDrive(drive.getId()));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    },
+                    null
+            );
+            driveItems.add(driveItem);
+        }
+        return driveItems;
     }
 
     /**

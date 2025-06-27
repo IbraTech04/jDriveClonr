@@ -139,7 +139,7 @@ public class DriveItem {
      * @return true if the children are loaded, false otherwise.
      */
     public boolean isLoaded() {
-        return !(children == null || children.isEmpty() || children.getFirst().getId().equals("loading"));
+        return !(children == null || children.isEmpty() || children.getFirst().getId().equalsIgnoreCase("loading"));
     }
 
 }
