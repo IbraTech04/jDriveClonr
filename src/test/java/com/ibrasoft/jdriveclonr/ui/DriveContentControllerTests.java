@@ -14,7 +14,7 @@ public class DriveContentControllerTests {
 
     @BeforeEach
     void setUp() throws GeneralSecurityException, IOException {
-        driveAPIService = new DriveAPIService(GoogleOAuthService.authorize());
+//        driveAPIService = new DriveAPIService(GoogleOAuthService.authorize());
     }
 
 }

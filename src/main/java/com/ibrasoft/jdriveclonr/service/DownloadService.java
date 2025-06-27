@@ -14,6 +14,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,7 @@ public class DownloadService extends Service<Void> {
 
         // Initialize services and exporter registry
         try {
-            GoogleServiceFactory.GoogleServices services = GoogleServiceFactory.createServices(ServiceRepository.getCredential());
+            GoogleServiceFactory.GoogleServices services = GoogleServiceFactory.createServices();
             this.exporterRegistry = ExporterRegistry.create(services);
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize services for download", e);
@@ -122,25 +123,26 @@ public class DownloadService extends Service<Void> {
             return null;
         }
 
-        public void recurseAndAddTasks(DriveItem root, Path currPath) {
+        public void recurseAndAddTasks(DriveItem root, Path currPath) throws IOException {
             if (isCancelled()) {
                 return;
             }
 
             if (root.isFolder()) {
-                // Create directory if it doesn't exist
-                if (!currPath.toFile().exists()) {
-                    if (!currPath.toFile().mkdirs()) {
-                        throw new RuntimeException("Failed to create directory: " + currPath);
-                    }
-                }
-
                 if (!root.isLoaded()) {
                     try {
                         root.loadChildren();
                     } catch (Exception e) {
                         throw new RuntimeException("Failed to load children for folder '" + root.getName() + "': " + e.getMessage(), e);
                     }
+                }
+
+                // Create directory if it doesn't exist
+                if (!currPath.toFile().exists()) {
+                    if (!currPath.toFile().mkdirs()) {
+                        throw new RuntimeException("Failed to create directory: " + currPath);
+                    }
+                    FileUtils.setLastModifiedFromDateTime(currPath.toFile(), root.getModifiedTime());
                 }
 
                 if (root.getChildren() != null && !root.getChildren().isEmpty()) {

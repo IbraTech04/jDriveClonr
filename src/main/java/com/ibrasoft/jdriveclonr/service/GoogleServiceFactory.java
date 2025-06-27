@@ -10,10 +10,27 @@ import com.google.common.util.concurrent.RateLimiter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import javax.security.auth.login.CredentialNotFoundException;
+
 public class GoogleServiceFactory {
     
     private static final RateLimiter rateLimiter = RateLimiter.create(1);
-    
+    public static Credential credential;
+
+    public static void authorize(Credential cred) {
+        if (cred == null) {
+            throw new IllegalArgumentException("Credential cannot be null");
+        }
+        credential = cred;
+    }
+
+    public static GoogleServices createServices() throws Exception {
+        if (credential == null) {
+            throw new CredentialNotFoundException("Credential not set. Please call GoogleOAuthService.authorize() first.");
+        }
+        return createServices(credential);
+    }
+
     public static GoogleServices createServices(Credential credential) throws Exception {
         var transport = GoogleNetHttpTransport.newTrustedTransport();
         var jsonFactory = GsonFactory.getDefaultInstance();
@@ -31,6 +48,10 @@ public class GoogleServiceFactory {
                 .build();
                 
         return new GoogleServices(drive, sheets, slides, credential, rateLimiter);
+    }
+
+    public static Drive getDriveService() throws Exception {
+        return createServices().getDriveService();
     }
     
     @AllArgsConstructor

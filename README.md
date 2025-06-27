@@ -89,6 +89,11 @@ jDriveClonr now features a thread count slider in the configuration screen that 
 ## ❓ FAQ
 
 <details>
+<summary><b>Why is the jDriveClonr progress-bar unstable?</b></summary>
+<p>jDriveClonr uses lazy-loading to improve performance and decrease memory usage. In simple terms, jDriveClonr is discovering the files as it clones them; it does not know how many files there are to clone until it's done cloning. This means that the progress bar will not be accurate until the cloning is complete. There is unfortunately no solution to this that maintains performance or speed :(</p>
+</details>
+
+<details>
 <summary><b>What happened to the 'e' in Clon(e)r?</b></summary>
 <p>`Clonr` looks cooler than `Cloner`. 'Nuff said.</p>
 </details>

@@ -1,22 +1,18 @@
 package com.ibrasoft.jdriveclonr.service;
 
-import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.ibrasoft.jdriveclonr.model.DriveItem;
+import lombok.AllArgsConstructor;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
 public class DriveAPIService {
     private final Drive driveService;
-
-    public DriveAPIService(Credential credential) throws GeneralSecurityException, IOException {
-        this.driveService = ServiceRepository.getDriveService();
-    }
 
     /**
      * Private wrapper around {@link Drive#files().list()} to fetch files with a specified query.
@@ -29,7 +25,7 @@ public class DriveAPIService {
         List<File> files = new ArrayList<>();
         String pageToken = null;
         do {
-            FileList result = driveService.files().list().setQ(query + " and mimeType != 'application/vnd.google-apps.form'" + "and mimeType != 'application/vnd.google-apps.shortcut' and mimeType != 'application/vnd.google-apps.drive-sdk'").setFields("nextPageToken, files(id, name, mimeType, parents, modifiedTime, size, shared, webContentLink)").setPageToken(pageToken).setPageSize(1000).setSupportsAllDrives(true).setCorpora("allDrives").setIncludeItemsFromAllDrives(true).execute();
+            FileList result = driveService.files().list().setQ(query + " and mimeType != 'application/vnd.google-apps.form'" + "and mimeType != 'application/vnd.google-apps.shortcut' and mimeType != 'application/vnd.google-apps.drive-sdk'").setFields("nextPageToken, files(id, name, mimeType, modifiedTime, size, shared, webContentLink)").setPageToken(pageToken).setPageSize(1000).setSupportsAllDrives(true).setCorpora("allDrives").setIncludeItemsFromAllDrives(true).execute();
             files.addAll(result.getFiles());
             pageToken = result.getNextPageToken();
         } while (pageToken != null);

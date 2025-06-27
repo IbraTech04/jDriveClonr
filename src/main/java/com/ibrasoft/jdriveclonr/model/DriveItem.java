@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,21 @@ public class DriveItem {
 
     public DriveItem() {
         logger.info("DriveItem instance created");
+    }
+
+    public DateTime getModifiedTime() {
+        if (this.modifiedTime != null) {
+            return this.modifiedTime;
+        }
+        // Find the latest date among children if available
+        if (this.isLoaded()) {
+            return children.stream()
+                    .map(DriveItem::getModifiedTime)
+                    .filter(Objects::nonNull)
+                    .max(Comparator.comparingLong(DateTime::getValue))
+                    .orElse(null);
+        }
+        return null; // No modified time available
     }
 
     public void setChildren(List<DriveItem> children) {
