@@ -148,9 +148,13 @@ public class DownloadController implements javafx.fxml.Initializable {
 
         // Initially hide completed and failed downloads sections
         completedHeaderBox.setVisible(false);
+        completedHeaderBox.setManaged(false);
         completedDownloadsPane.setVisible(false);
+        completedDownloadsPane.setManaged(false);
         failedHeaderBox.setVisible(false);
+        failedHeaderBox.setManaged(false);
         failedDownloadsPane.setVisible(false);
+        failedDownloadsPane.setManaged(false);
     }
 
     /**
@@ -232,7 +236,9 @@ public class DownloadController implements javafx.fxml.Initializable {
                         // Show completed section if this is the first completion
                         if (!completedHeaderBox.isVisible() && !downloadService.getCompletedTasks().isEmpty()) {
                             completedHeaderBox.setVisible(true);
+                            completedHeaderBox.setManaged(true);
                             completedDownloadsPane.setVisible(true);
+                            completedDownloadsPane.setManaged(true);
                         }
                         updateProgress();
                     });
@@ -281,7 +287,9 @@ public class DownloadController implements javafx.fxml.Initializable {
             // Show failed section if this is the first failure
             if (!failedHeaderBox.isVisible() && !downloadService.getFailedTasks().isEmpty()) {
                 failedHeaderBox.setVisible(true);
+                failedHeaderBox.setManaged(true);
                 failedDownloadsPane.setVisible(true);
+                failedDownloadsPane.setManaged(true);
             }
             updateProgress();
         });
