@@ -161,6 +161,7 @@ public class DefaultExporter implements IDocumentExporter {
                     }
                 }
             }
+            FileUtils.setLastModifiedFromDateTime(fullPath, d.getModifiedTime());
         } catch (GoogleJsonResponseException e) {
             System.err.println("Unable to download file: " + e.getDetails());
             pc.updateProgress(0.0, 1.0, "Failed to download: " + fileName + " - " + e.getMessage());

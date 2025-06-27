@@ -137,4 +137,22 @@ public class FileUtils {
         FileTime fileTime = FileTime.fromMillis(dateTime.getValue());
         Files.setLastModifiedTime(path, fileTime);
     }
+
+    public static void setLastModifiedFromDateTime(Path filePath, DateTime dateTime) throws IOException {
+        if (!Files.exists(filePath)) {
+            throw new IllegalArgumentException("File does not exist: " + filePath);
+        }
+
+        FileTime fileTime = FileTime.fromMillis(dateTime.getValue());
+        Files.setLastModifiedTime(filePath, fileTime);
+    }
+
+    public static void setLastModifiedFromDateTime(String filePath, DateTime dateTime) throws IOException {
+        setLastModifiedFromDateTime(Paths.get(filePath), dateTime);
+    }
+
+    public static String getCurrentDateTimeFormatted() {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        return now.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss"));
+    }
 }

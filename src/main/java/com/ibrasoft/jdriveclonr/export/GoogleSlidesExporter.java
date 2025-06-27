@@ -71,7 +71,7 @@ public class GoogleSlidesExporter implements IDocumentExporter {
                      FileOutputStream output = new FileOutputStream(outFile)) {
                     in.transferTo(output);
                 }
-
+                FileUtils.setLastModifiedFromDateTime(outFile, d.getModifiedTime());
                 pc.updateProgress(((i + 1) / (1.0 * slides.size())), 1.0, "Exporting slide: " + slide.getPageElements().getFirst().getObjectId());
             }
         } catch (Exception e) {

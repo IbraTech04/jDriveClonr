@@ -63,6 +63,7 @@ public class GoogleSheetsExporter implements IDocumentExporter {
                         output
                 );
             }
+            FileUtils.setLastModifiedFromDateTime(outFile, d.getModifiedTime());
             pc.updateProgress(((i + 1) / (1.0 * sheet.getSheets().size())), 1.0, "Exporting sheet: " + sheetName);
         }
     }

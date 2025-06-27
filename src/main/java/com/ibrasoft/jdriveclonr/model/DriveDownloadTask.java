@@ -24,8 +24,6 @@ public class DriveDownloadTask extends Task<Void> {
                     updateProgress(workDone, totalWork);
                     updateMessage(message);
                 });
-
-
         return null;
     }
 }
