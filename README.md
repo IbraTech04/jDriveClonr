@@ -52,21 +52,19 @@ Follow the instructions in the [Google Drive API documentation](https://develope
 
 - **Java:** JDK 21 (JDK 17+ may work but is untested)
 - **JavaFX:** 21
-- **Maven:** 3.8.5 or higher
+- **Gradle** (or Gradle Wrapper)
+  - If you don't have Gradle installed, you can use the Gradle Wrapper included in this project. Just run `./gradlew` (or `gradlew.bat` on Windows) instead of `gradle`.
+  - This project uses Gradle 8.14.2, though *in theory* any Gradle version 8.0+ should work.
 - **OS:** Windows, macOS, or Linux. Anything that's not a toaster and has an internet connection should work.
 
 ### Building the Project
 
-All requirements are listed in [pom.xml](pom.xml). To build the project, run the following command in the root directory:
+All dependencies and build tools are managed via Gradle, so you don't need to install anything else to build the project. The Gradle Wrapper is included in this project, so you can use `./gradlew` (or `gradlew.bat` on Windows) to run Gradle commands without needing a system-wide installation of Gradle.
+
+To build the project, run the following command in the root directory:
 
 ```bash
-mvnw clean install
-```
-
-Or, if you have a system-wide installation of Maven:
-
-```bash
-mvn clean install
+gradle clean build
 ```
 
 This will compile jDriveClonr and install all necessary dependencies.
@@ -74,17 +72,18 @@ This will compile jDriveClonr and install all necessary dependencies.
 ### Running the Application
 
 ```bash
-mvn javafx:run
+gradle run
 ```
 
-*Or `mvnw javafx:run` if you are using the wrapper.*
+*Again, if you do not have Gradle installed, simply substitute `gradle` with `./gradlew` (or `gradlew.bat` on Windows) in the above commands.*
 
 ## Performance Tuning
 
 jDriveClonr now features a thread count slider in the configuration screen that allows you to customize the number of concurrent download threads (1-10).
 
 > [!WARNING]
-> **Best Practice:** It is recommended to use 4-5 threads for optimal performance. Using more than 5 threads may result in rate-limiting by Google's API and other unpredictable behavior. The application will display a warning when selecting more than 5 threads.
+> **Best Practice:** It is recommended to use 4-5 threads for optimal performance. Using more than 5 threads will result in increased memory usage, and may result in rate-limiting by Google's API, among other unpredictable behavior. The application will display a warning when selecting more than 5 threads. 
+jDriveClonr will attempt to automatically throttle its downloads to avoid rate-limiting, but this is mostly untested and may not work as expected.
 
 ## ❓ FAQ
 
