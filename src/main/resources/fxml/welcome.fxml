@@ -7,35 +7,50 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.ibrasoft.jdriveclonr.ui.WelcomeController"
-            prefWidth="600" prefHeight="500">
+            prefWidth="700" prefHeight="600"
+            minWidth="600" minHeight="500"
+            stylesheets="@../styles/dark/welcome.css">
 
     <center>
-        <VBox alignment="CENTER" spacing="30.0">
-            <padding>
-                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
-            </padding>
+        <VBox alignment="CENTER" styleClass="card">
+            <VBox alignment="CENTER" spacing="32" styleClass="card-content">
+                <ImageView fx:id="logoImageView" fitWidth="160" fitHeight="160" preserveRatio="true">
+                    <Image url="@/DriveClonrLogo.png"/>
+                </ImageView>
 
-            <ImageView fx:id="logoImageView" fitWidth="200" fitHeight="200" preserveRatio="true">
-                <Image url="@/DriveClonrLogo.png"/>
-            </ImageView>
+                <VBox alignment="CENTER" spacing="12">
+                    <Label text="Welcome to DriveClonr" styleClass="title-large"/>
+                    <Label text="The best way to archive and backup your Google Drive files" styleClass="subtitle"/>
+                </VBox>
 
-            <Label text="Welcome to DriveClonr" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-            <Label text="The BEST way to archive your Google Drive!" style="-fx-font-size: 14px;"/>
+                <VBox alignment="CENTER" spacing="8">
+                    <Label text="• Download and organize your entire Google Drive" styleClass="body-text"/>
+                    <Label text="• Convert Google Docs, Sheets, and Slides to standard formats" styleClass="body-text"/>
+                    <Label text="• Keep your data safe with local backups" styleClass="body-text"/>
+                </VBox>
 
-            <Button text="Start" onAction="#onStartClicked" styleClass="primary-button"/>
+                <Region prefHeight="16"/>
+
+                <Button text="Get Started" onAction="#onStartClicked" styleClass="primary-button" 
+                        prefWidth="160" prefHeight="44"/>
+            </VBox>
         </VBox>
     </center>
 
     <bottom>
-        <VBox alignment="CENTER">
-            <padding>
-                <Insets bottom="10" top="10"/>
-            </padding>
-            <Label text="© 2025 IbraSoft. All rights reserved. | Version 1.0.0b" style="-fx-font-size: 10px; -fx-text-fill: gray;"/>
-        </VBox>
+        <HBox alignment="CENTER">
+            <VBox alignment="CENTER" styleClass="section-spacing">
+                <padding>
+                    <Insets bottom="24" top="16"/>
+                </padding>
+                <Label text="© 2025 IbraSoft. All rights reserved. | Version 1.0.0b" styleClass="copyright-text"/>
+            </VBox>
+        </HBox>
     </bottom>
 
 </BorderPane>

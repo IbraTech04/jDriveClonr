@@ -6,22 +6,44 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.BorderPane?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.ibrasoft.jdriveclonr.ui.AuthController">
-    <padding>
-        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
-    </padding>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ibrasoft.jdriveclonr.ui.AuthController"
+            prefWidth="700" prefHeight="600"
+            stylesheets="@../styles/dark/auth.css">
 
-    <Label text="Connect to Google Drive" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-    <Label text="Sign in with your Google account to access your Drive content" style="-fx-font-size: 14px;"/>
-    
-    <Region prefHeight="20.0"/>
-    
-    <Button text="Sign in with Google" onAction="#onSignInClicked" styleClass="google-button" id="signInButton"/>
-    
-    <HBox spacing="10.0" alignment="CENTER">
-        <Button text="Back" onAction="#onBackClicked"/>
-        <Region HBox.hgrow="ALWAYS"/>
-    </HBox>
-</VBox>
+    <center>
+        <VBox alignment="CENTER" styleClass="card">
+            <VBox alignment="CENTER" spacing="32" styleClass="card-content">
+                
+                <VBox alignment="CENTER" spacing="12">
+                    <Label text="Connect to Google Drive" styleClass="title-medium"/>
+                    <Label text="Sign in with your Google account to access and download your Drive content" 
+                           styleClass="subtitle" wrapText="true" textAlignment="CENTER" maxWidth="400"/>
+                </VBox>
+
+                <VBox alignment="CENTER" spacing="16">
+                    <Label text="What you can do:" styleClass="title-small"/>
+                    <VBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="• Access all your Google Drive files and folders" styleClass="body-text"/>
+                        <Label text="• Download files in their original formats" styleClass="body-text"/>
+                        <Label text="• Convert Google Workspace files to standard formats" styleClass="body-text"/>
+                        <Label text="• Organize your downloaded files locally" styleClass="body-text"/>
+                    </VBox>
+                </VBox>
+                
+                <Region prefHeight="16"/>
+                
+                <Button text="Sign in with Google" onAction="#onSignInClicked" 
+                        styleClass="google-button" id="signInButton"/>
+                
+                <HBox spacing="16" alignment="CENTER" styleClass="button-container">
+                    <Button text="Back" onAction="#onBackClicked" styleClass="secondary-button"/>
+                </HBox>
+                
+            </VBox>
+        </VBox>
+    </center>
+
+</BorderPane>

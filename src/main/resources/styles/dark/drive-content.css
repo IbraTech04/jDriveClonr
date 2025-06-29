@@ -1,0 +1,98 @@
+/*
+ * Dark Theme - Drive Content View Styling
+ */
+
+/* Import base dark styles */
+@import "main.css";
+
+/* TreeView specific styling */
+.tree-view {
+    -fx-background-color: #1E1E1E;
+    -fx-border-color: #404040;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8;
+}
+
+.tree-view .tree-cell {
+    -fx-padding: 8 12;
+    -fx-background-color: transparent;
+    -fx-text-fill: #E0E0E0;
+    -fx-background-radius: 4;
+}
+
+.tree-view .tree-cell:hover {
+    -fx-background-color: #2D2D2D;
+    -fx-background-radius: 4;
+}
+
+.tree-view .tree-cell:selected {
+    -fx-background-color: #1E3A5F;
+    -fx-background-radius: 4;
+    -fx-text-fill: #87CEEB;
+}
+
+.tree-view .tree-cell:selected:hover {
+    -fx-background-color: #2D4A7A;
+}
+
+/* Checkbox styling in tree view */
+.tree-view .check-box {
+    -fx-text-fill: #E0E0E0;
+}
+
+.tree-view .check-box .box {
+    -fx-background-color: #2D2D2D;
+    -fx-border-color: #606060;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+
+.tree-view .check-box:selected .box {
+    -fx-background-color: #4285F4;
+    -fx-border-color: #4285F4;
+}
+
+.tree-view .check-box:selected .mark {
+    -fx-background-color: white;
+}
+
+.tree-view .check-box:hover .box {
+    -fx-border-color: #4285F4;
+}
+
+/* Tree disclosure node (expand/collapse arrows) */
+.tree-view .tree-disclosure-node {
+    -fx-background-color: transparent;
+}
+
+.tree-view .tree-disclosure-node .arrow {
+    -fx-background-color: #B0B0B0;
+    -fx-shape: "M 0 0 h 7 l -3.5 4 z";
+    -fx-scale-shape: true;
+}
+
+.tree-view .tree-disclosure-node:expanded .arrow {
+    -fx-rotate: 90;
+}
+
+/* Scrollbar for tree view */
+.tree-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.tree-view .scroll-bar:vertical .track {
+    -fx-background-color: #2D2D2D;
+    -fx-background-radius: 4;
+}
+
+.tree-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #505050;
+    -fx-background-radius: 4;
+}
+
+.tree-view .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #606060;
+}

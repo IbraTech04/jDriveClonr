@@ -1,0 +1,17 @@
+/*
+ * Dark Theme - Welcome View Styling
+ */
+
+/* Import base dark styles */
+@import "main.css";
+
+/* Welcome-specific positioning */
+.root {
+    -fx-background-color: linear-gradient(to bottom, #121212, #1A1A1A);
+}
+
+/* Center the card on the screen */
+.card {
+    -fx-max-width: 520;
+    -fx-max-height: 480;
+}

@@ -4,29 +4,59 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="com.ibrasoft.jdriveclonr.ui.DriveContentController">
-    <padding>
-        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
-    </padding>
+<BorderPane xmlns:fx="http://javafx.com/fxml" 
+            fx:controller="com.ibrasoft.jdriveclonr.ui.DriveContentController"
+            prefWidth="900" prefHeight="700"
+            minWidth="800" minHeight="600"
+            stylesheets="@../styles/dark/drive-content.css">
 
-    <Label text="Select Files to Clone" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-    <Label text="Choose the files and folders you want to clone" style="-fx-font-size: 14px;"/>
-    
-    <StackPane VBox.vgrow="ALWAYS">
-        <TreeView fx:id="driveTreeView" showRoot="false">
-            <padding>
-                <Insets top="10.0"/>
-            </padding>
-        </TreeView>
-        <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="10" style="-fx-background-color: rgba(255,255,255,0.8);">
-            <ProgressIndicator fx:id="progressIndicator" />
-            <Label text="Loading your drive..." />
-            <Label text="Fun Fact: You will soon be presented with a Tree-View of your files, lazily loaded :P" style="-fx-font-size: 12px;"/>
+    <!-- Header Section -->
+    <top>
+        <VBox styleClass="content-container" spacing="16">
+            <VBox spacing="8">
+                <Label text="Select Files to Download" styleClass="title-medium"/>
+                <Label text="Choose the files and folders you want to backup from your Google Drive" 
+                       styleClass="subtitle"/>
+            </VBox>
+            
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <Label text="💡" styleClass="title-small"/>
+                <Label text="Pro Tip: You can select entire folders or individual files. Large files may take longer to download." 
+                       styleClass="caption-text" wrapText="true"/>
+            </HBox>
         </VBox>
-    </StackPane>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <VBox styleClass="content-container" VBox.vgrow="ALWAYS">
+            <StackPane VBox.vgrow="ALWAYS" styleClass="card">
+                <VBox styleClass="card-content" VBox.vgrow="ALWAYS">
+                    <TreeView fx:id="driveTreeView" showRoot="false" VBox.vgrow="ALWAYS"/>
+                </VBox>
+                
+                <!-- Loading Overlay -->
+                <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="16" 
+                      styleClass="loading-overlay" visible="true">
+                    <ProgressIndicator fx:id="progressIndicator" prefWidth="48" prefHeight="48"/>
+                    <VBox alignment="CENTER" spacing="8">
+                        <Label text="Loading your Drive content..." styleClass="subtitle"/>
+                        <Label text="This may take a moment for large drives with many files" 
+                               styleClass="caption-text"/>
+                    </VBox>
+                </VBox>
+            </StackPane>
+        </VBox>
+    </center>
     
-    <HBox spacing="10.0" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
-        <Button text="Back" onAction="#onBackClicked"/>
-        <Button text="Next" onAction="#onStartCloneClicked" styleClass="primary-button" fx:id="startCloneButton"/>
-    </HBox>
-</VBox>
+    <!-- Bottom Actions -->
+    <bottom>
+        <HBox styleClass="content-container" spacing="16" alignment="CENTER_RIGHT">
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Back" onAction="#onBackClicked" styleClass="secondary-button"/>
+            <Button text="Continue" onAction="#onStartCloneClicked" 
+                    styleClass="primary-button" fx:id="startCloneButton"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

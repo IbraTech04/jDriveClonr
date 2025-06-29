@@ -1,0 +1,29 @@
+/*
+ * Drive Content View Styling
+ */
+
+/* Import base styles */
+@import "main.css";
+
+/* TreeView specific styling */
+.tree-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.tree-view .tree-cell {
+    -fx-padding: 8 12;
+    -fx-background-color: transparent;
+}
+
+.tree-view .tree-cell:hover {
+    -fx-background-color: #F8F9FA;
+    -fx-background-radius: 4;
+}
+
+.tree-view .tree-cell:selected {
+    -fx-background-color: #E8F0FE;
+    -fx-background-radius: 4;
+    -fx-text-fill: #1967D2;
+}

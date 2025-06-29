@@ -1,0 +1,71 @@
+/*
+ * Configuration View Styling
+ */
+
+/* Import base styles */
+@import "main.css";
+
+/* Compact layout for config view */
+.config-header {
+    -fx-padding: 16 24 12 24;
+}
+
+.config-content {
+    -fx-padding: 0 24 12 24;
+}
+
+.config-card-content {
+    -fx-padding: 16;
+}
+
+.config-bottom {
+    -fx-padding: 12 24 16 24;
+}
+
+/* Additional compact styling */
+.config-content .card {
+    -fx-spacing: 8;
+}
+
+/* Reduce margins on form elements */
+.config-card-content .combo-box,
+.config-card-content .text-field {
+    -fx-pref-height: 32;
+}
+
+/* Compact grid layout */
+.config-card-content .grid-pane {
+    -fx-vgap: 6;
+    -fx-hgap: 16;
+}
+
+/* Slider customization */
+.slider .track {
+    -fx-background-color: #E8EAED;
+    -fx-background-radius: 4;
+}
+
+.slider .thumb {
+    -fx-background-color: #4285F4;
+    -fx-background-radius: 50%;
+    -fx-effect: dropshadow(gaussian, rgba(66,133,244,0.3), 4, 0, 0, 2);
+}
+
+.slider .thumb:hover {
+    -fx-background-color: #3367D6;
+    -fx-effect: dropshadow(gaussian, rgba(66,133,244,0.4), 6, 0, 0, 3);
+}
+
+/* ScrollPane styling */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .corner {
+    -fx-background-color: transparent;
+}

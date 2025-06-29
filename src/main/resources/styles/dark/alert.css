@@ -1,0 +1,144 @@
+/* Dark Theme - Custom styling for alerts */
+.error-dialog {
+    background-color: #1E1E1E;
+    -fx-background-color: #1E1E1E;
+}
+
+.error-dialog > *.header-panel {
+    background-color: #4A1A1A;
+    -fx-background-color: #4A1A1A;
+}
+
+.error-dialog > *.header-panel *.label {
+    font-size: 16px;
+    -fx-font-size: 16px;
+    font-weight: bold;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FF6B6B;
+}
+
+.error-dialog > *.content.label {
+    font-size: 14px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #E0E0E0;
+    padding: 16px 0 0 0;
+    -fx-padding: 16px 0 0 0;
+}
+
+.error-dialog:header .graphic-container {
+    padding: 0;
+    -fx-padding: 0;
+}
+
+.error-dialog .button-bar .container {
+    padding: 16px 0;
+    -fx-padding: 16px 0;
+}
+
+.error-dialog .button-bar .button {
+    background-color: #4285F4;
+    -fx-background-color: #4285F4;
+    -fx-text-fill: white;
+    font-size: 14px;
+    -fx-font-size: 14px;
+    padding: 8px 16px;
+    -fx-padding: 8 16;
+    -fx-background-radius: 4;
+}
+
+.error-dialog .button-bar .button:hover {
+    background-color: #3367D6;
+    -fx-background-color: #3367D6;
+}
+
+.error-dialog .button-bar .button:pressed {
+    background-color: #2851C7;
+    -fx-background-color: #2851C7;
+}
+
+/* Success Dialog Styling */
+.success-dialog {
+    background-color: #1E1E1E;
+    -fx-background-color: #1E1E1E;
+}
+
+.success-dialog > *.header-panel {
+    background-color: #1B4332;
+    -fx-background-color: #1B4332;
+}
+
+.success-dialog > *.header-panel *.label {
+    font-size: 16px;
+    -fx-font-size: 16px;
+    font-weight: bold;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4CAF50;
+}
+
+.success-dialog > *.content.label {
+    font-size: 14px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #E0E0E0;
+    padding: 16px 0 0 0;
+    -fx-padding: 16px 0 0 0;
+}
+
+.success-dialog:header .graphic-container {
+    padding: 0;
+    -fx-padding: 0;
+}
+
+.success-dialog .button-bar .container {
+    padding: 16px 0;
+    -fx-padding: 16px 0;
+}
+
+.success-dialog .button-bar .button {
+    background-color: #4285F4;
+    -fx-background-color: #4285F4;
+    -fx-text-fill: white;
+    font-size: 14px;
+    -fx-font-size: 14px;
+    padding: 8px 16px;
+    -fx-padding: 8 16;
+    -fx-background-radius: 4;
+}
+
+.success-dialog .button-bar .button:hover {
+    background-color: #3367D6;
+    -fx-background-color: #3367D6;
+}
+
+.success-dialog .button-bar .button:pressed {
+    background-color: #2851C7;
+    -fx-background-color: #2851C7;
+}
+
+/* Additional dark theme dialog styling */
+.dialog-pane {
+    -fx-background-color: #1E1E1E;
+    -fx-border-color: #404040;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #2D2D2D;
+    -fx-background-radius: 8 8 0 0;
+}
+
+.dialog-pane .content {
+    -fx-background-color: #1E1E1E;
+    -fx-text-fill: #E0E0E0;
+}
+
+.dialog-pane .button-bar {
+    -fx-background-color: #2D2D2D;
+    -fx-background-radius: 0 0 8 8;
+}
+
+.dialog-pane .expandable-content {
+    -fx-background-color: #1E1E1E;
+    -fx-text-fill: #E0E0E0;
+}
