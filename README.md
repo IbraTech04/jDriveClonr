@@ -56,6 +56,9 @@ Follow the instructions in the [Google Drive API documentation](https://develope
   - If you don't have Gradle installed, you can use the Gradle Wrapper included in this project. Just run `./gradlew` (or `gradlew.bat` on Windows) instead of `gradle`.
   - This project uses Gradle 8.14.2, though *in theory* any Gradle version 8.0+ should work.
 - **OS:** Windows, macOS, or Linux. Anything that's not a toaster and has an internet connection should work.
+- **WiX Toolset** (for Windows builds only)
+  - If you want to build the Windows installer, you will need to install the [WiX Toolset](https://wixtoolset.org/). 
+  - Ensure that the WiX binaries are in your system's PATH.
 
 ### Building the Project
 
